@@ -11,7 +11,7 @@
 
 Vi har valt bokningssystem resource-booking-ht26
 
-Vi båda två har erafarnhet av liknande projekt och kände att detta var mest intressant för oss.
+Vi båda två har erfarenhet av liknande projekt och kände att detta var mest passande för oss att jobba med.
 
 ## Teknikval
 
@@ -35,6 +35,8 @@ npm start
 |----------|-------------|
 | MONGODB_URI | Anslutningssträng till MongoDB |
 | PORT | Port (default 1337) |
+| PORT | Port=3000 | Anslutningssträng till npm start |
+
 
 ## Tester
 
@@ -49,6 +51,6 @@ npm test
 
 Dokumentera löpande vad ni gjort och hur ni löst problem.
 
-- Vecka 1: ...
+- Vecka 1: Repot skapades och lades till med Klona + nytt repo, sedan kördes npm install för att installera appen. Alla steg gick bra och applikationen startades upp utan problem. Även npm audit kördes som visade: "3 moderate severity vulnerabilities", npm audit fix lyckades inte fixa dessa 3 stycken vulnerabilites.
 - Vecka 2: ...
 - Vecka 3: ...
