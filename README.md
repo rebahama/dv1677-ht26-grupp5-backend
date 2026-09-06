@@ -4,7 +4,7 @@
 
 | Namn | GitHub |
 |------|--------|
-| Rebaz Mohammad Ahmad, Github namn: rebahama | rebahama  |
+| Rebaz Mohammad Ahmad| rebahama  |
 | Tuan Anh Pham | tuananhpham95 |
 
 ## Projektval
@@ -19,7 +19,7 @@ Vi båda två har erafarnhet av liknande projekt och kände att detta var mest i
 
 React kommer att användas eftersom att det finns en stor community och väldigt bra dokumentation, även tidigare erfarenhet av React finns som gör att valet hamnade på React.
 
-Motivering: ...
+
 
 ## Kör lokalt
 
