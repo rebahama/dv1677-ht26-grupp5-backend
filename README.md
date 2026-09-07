@@ -23,19 +23,18 @@ React kommer att användas eftersom att det finns en stor community och väldigt
 
 ## Kör lokalt
 
-git clone <repo-url>
-cd dv1677-ht26-grupp5-backend
-cp .env.example .env
-npm install
-npm start
+1. git clone <repo-url>
+2. cd dv1677-ht26-grupp5-backend
+3. cp .env.example .env
+4. npm install
+5. npm start
 
 **Miljövariabler** (se .env.example):
 
 | Variabel | Beskrivning |
 |----------|-------------|
 | MONGODB_URI | Anslutningssträng till MongoDB |
-| PORT | Port (default 1337) |
-| PORT | Port=3000 | Anslutningssträng till npm start |
+| PORT=3000 | Anslutningssträng till npm start |
 
 
 ## Tester
