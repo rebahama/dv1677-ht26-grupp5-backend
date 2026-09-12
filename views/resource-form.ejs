@@ -1,18 +1,40 @@
 <%- include('includes/header'); %>
-    <h2><%= resource.id ? 'Redigera resurs' : 'Ny resurs' %></h2>
-    <form method="POST" action="/resources" class="resource-form">
-        <label for="name">Namn</label>
-        <input type="text" name="name" value="<%= resource.name || '' %>" placeholder="VM-01" required />
+<h2><%= resource.id ? 'Redigera resurs' : 'Ny resurs' %></h2>
+<form
+  method="POST"
+  action="<%= resource.id ? '/resources/' + resource.id : '/resources' %>"
+  class="resource-form"
+>
+  <label for="name">Namn</label>
+  <input
+    type="text"
+    name="name"
+    value="<%= resource.name || '' %>"
+    placeholder="VM-01"
+    required
+  />
 
-        <label for="type">Typ</label>
-        <input type="text" name="type" value="<%= resource.type || '' %>" placeholder="vm, container, gpu" />
+  <label for="type">Typ</label>
+  <input
+    type="text"
+    name="type"
+    value="<%= resource.type || '' %>"
+    placeholder="vm, container, gpu"
+  />
 
-        <label for="description">Beskrivning</label>
-        <textarea name="description" placeholder="Ubuntu 24.04 – 4 vCPU, 8 GB RAM"><%= resource.description || '' %></textarea>
+  <label for="description">Beskrivning</label>
+  <textarea name="description" placeholder="Ubuntu 24.04 – 4 vCPU, 8 GB RAM">
+<%= resource.description || '' %></textarea
+  >
 
-        <label for="capacity">Kapacitet (samtidiga bokningar)</label>
-        <input type="number" name="capacity" value="<%= resource.capacity || 1 %>" min="1" />
+  <label for="capacity">Kapacitet (samtidiga bokningar)</label>
+  <input
+    type="number"
+    name="capacity"
+    value="<%= resource.capacity || 1 %>"
+    min="1"
+  />
 
-        <input type="submit" value="Spara" />
-    </form>
+  <input type="submit" value="Spara" />
+</form>
 <%- include('includes/footer'); %>
