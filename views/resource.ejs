@@ -1,33 +1,34 @@
 <%- include('includes/header'); %>
-    <h2><%= resource.name %></h2>
-    <p><%= resource.type %> — <%= resource.description %></p>
-    <p>Kapacitet: <%= resource.capacity %></p>
+<h2><%= resource.name %></h2>
+<p><%= resource.type %> — <%= resource.description %></p>
+<p>Kapacitet: <%= resource.capacity %></p>
+<p>
+  <a href="/resources/<%= resource.id %>/edit" class="btn">Redigera resurs</a>
+</p>
+<h3>Bokningar</h3>
+<% if (bookings.length === 0) { %>
+<p>Inga bokningar för denna resurs.</p>
+<% } %> <% bookings.forEach(function(b){ %>
+<div class="booking-card">
+  <p><strong><%= b.user %></strong></p>
+  <p><%= b.start_time %> — <%= b.end_time %></p>
+  <p class="status"><%= b.status %></p>
+</div>
+<% }); %>
 
-    <h3>Bokningar</h3>
-    <% if (bookings.length === 0) { %>
-        <p>Inga bokningar för denna resurs.</p>
-    <% } %>
-    <% bookings.forEach(function(b){ %>
-        <div class="booking-card">
-            <p><strong><%= b.user %></strong></p>
-            <p><%= b.start_time %> — <%= b.end_time %></p>
-            <p class="status"><%= b.status %></p>
-        </div>
-    <% }); %>
+<h3>Ny bokning</h3>
+<form method="POST" action="/bookings" class="booking-form">
+  <input type="hidden" name="resource_id" value="<%= resource.id %>" />
 
-    <h3>Ny bokning</h3>
-    <form method="POST" action="/bookings" class="booking-form">
-        <input type="hidden" name="resource_id" value="<%= resource.id %>" />
+  <label for="user">Användare</label>
+  <input type="text" name="user" placeholder="namn@student.bth.se" required />
 
-        <label for="user">Användare</label>
-        <input type="text" name="user" placeholder="namn@student.bth.se" required />
+  <label for="start_time">Starttid</label>
+  <input type="datetime-local" name="start_time" required />
 
-        <label for="start_time">Starttid</label>
-        <input type="datetime-local" name="start_time" required />
+  <label for="end_time">Sluttid</label>
+  <input type="datetime-local" name="end_time" required />
 
-        <label for="end_time">Sluttid</label>
-        <input type="datetime-local" name="end_time" required />
-
-        <input type="submit" value="Boka" />
-    </form>
+  <input type="submit" value="Boka" />
+</form>
 <%- include('includes/footer'); %>
