@@ -1,32 +1,37 @@
 import db from "./db/database.mjs";
+import { ObjectId } from "mongodb";
 
 const bookings = {
   getByResource: async function getByResource(resourceId) {
+    if (!ObjectId.isValid(resourceId)) return [];
+
     return await db
       .collection("bookings")
-      .find({ resource_id: Number(resourceId) })
-      .sort({ start_time: 1 })
+      .find({ resourceId: new ObjectId(resourceId) })
+      .sort({ startsAt: 1 })
       .toArray();
   },
 
   addOne: async function addOne(body) {
     const newBooking = {
-      id: Date.now(),
-      resource_id: Number(body.resource_id),
-      user: body.user,
-      start_time: body.start_time,
-      end_time: body.end_time,
+      resourceId: new ObjectId(body.resourceId),
+      bookedBy: body.bookedBy,
+      startsAt: body.startsAt,
+      endsAt: body.endsAt,
       status: "confirmed",
+      createdAt: new Date(),
     };
 
-    await db.collection("bookings").insertOne(newBooking);
+    const result = await db.collection("bookings").insertOne(newBooking);
 
-    return { lastID: newBooking.id };
+    return { lastID: result.insertedId };
   },
 
   deleteOne: async function deleteOne(id) {
+    if (!ObjectId.isValid(id)) return { changes: 0 };
+
     const result = await db.collection("bookings").deleteOne({
-      id: Number(id),
+      _id: new ObjectId(id),
     });
 
     return { changes: result.deletedCount };

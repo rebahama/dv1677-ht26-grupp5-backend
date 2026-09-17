@@ -1,4 +1,6 @@
+import { ObjectId } from "mongodb";
 import db from "./db/database.mjs";
+
 
 const resources = {
   getAll: async function getAll() {
@@ -6,18 +8,25 @@ const resources = {
   },
 
   getOne: async function getOne(id) {
+    if (!ObjectId.isValid(id)) {
+      return {};
+    }
+
     return (
-      (await db.collection("resources").findOne({ id: Number(id) })) || {}
+      (await db.collection("resources").findOne({
+        _id: new ObjectId(id),
+      })) || {}
     );
   },
 
   addOne: async function addOne(body) {
     const newResource = {
-      id: Date.now(),
       name: body.name,
       type: body.type,
       description: body.description,
       capacity: body.capacity || 1,
+      active: true,
+      createdAt: new Date(),
     };
 
     await db.collection("resources").insertOne(newResource);
@@ -26,16 +35,22 @@ const resources = {
   },
 
   deleteOne: async function deleteOne(id) {
+    if (!ObjectId.isValid(id)) {
+      return { changes: 0 };
+    }
     const result = await db.collection("resources").deleteOne({
-      id: Number(id),
+      _id: new ObjectId(id),
     });
 
     return { changes: result.deletedCount };
   },
 
   updateOne: async function updateOne(id, body) {
+    if (!ObjectId.isValid(id)) {
+      return { changes: 0 };
+    }
     const result = await db.collection("resources").updateOne(
-      { id: Number(id) },
+      { _id: new ObjectId(id) },
       {
         $set: {
           name: body.name,

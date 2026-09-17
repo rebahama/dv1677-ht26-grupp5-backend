@@ -67,7 +67,7 @@ app.post("/resources/:id", async (req, res) => {
 
 app.post("/bookings", async (req, res) => {
   await bookings.addOne(req.body);
-  return res.redirect(`/resources/${req.body.resource_id}`);
+  return res.redirect(`/resources/${req.body.resourceId}`);
 });
 
 app.delete("/bookings/:id", async (req, res) => {
