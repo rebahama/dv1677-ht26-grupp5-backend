@@ -1,6 +1,5 @@
 import "dotenv/config";
 import express from "express";
-import path from "path";
 import morgan from "morgan";
 import cors from "cors";
 import resources from "./resources.mjs";
@@ -10,10 +9,7 @@ const port = process.env.PORT;
 const app = express();
 
 app.disable("x-powered-by");
-app.set("view engine", "ejs");
-app.use(express.static(path.join(process.cwd(), "public")));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 if (process.env.NODE_ENV !== "test") {
@@ -23,29 +19,27 @@ if (process.env.NODE_ENV !== "test") {
 // --- Resurser ---
 
 app.get("/", async (req, res) => {
-  return res.render("index", { resources: await resources.getAll() });
+  return res.json({
+    name: "Booking api",
+    resources: "/resources",
+    bookings: "/bookings",
+  });
 });
 
-app.get("/resources/new", async (req, res) => {
-  return res.render("resource-form", { resource: {} });
+app.get("/resources", async (req, res) => {
+  return res.json(await resources.getAll());
 });
 
 app.post("/resources", async (req, res) => {
-  await resources.addOne(req.body);
-  return res.redirect("/");
+  const created = await resources.addOne(req.body);
+  return res.status(201).json(created);
 });
 
 app.get("/resources/:id", async (req, res) => {
   const resource = await resources.getOne(req.params.id);
   const resourceBookings = await bookings.getByResource(req.params.id);
 
-  return res.render("resource", { resource, bookings: resourceBookings });
-});
-
-app.get("/resources/:id/edit", async (req, res) => {
-  return res.render("resource-form", {
-    resource: await resources.getOne(req.params.id),
-  });
+  return res.json({ resource, bookings: resourceBookings });
 });
 
 app.delete("/resources/:id", async (req, res) => {
@@ -54,20 +48,20 @@ app.delete("/resources/:id", async (req, res) => {
 });
 
 app.put("/resources/:id", async (req, res) => {
-  await resources.updateOne(req.params.id, req.body);
-  return res.redirect(`/resources/${req.params.id}`);
+  const updated = await resources.updateOne(req.params.id, req.body);
+  return res.json(updated);
 });
 
 app.post("/resources/:id", async (req, res) => {
-  await resources.updateOne(req.params.id, req.body);
-  return res.redirect(`/resources/${req.params.id}`);
+  const updated = await resources.updateOne(req.params.id, req.body);
+  return res.json(updated);
 });
 
 // --- Bokningar ---
 
 app.post("/bookings", async (req, res) => {
-  await bookings.addOne(req.body);
-  return res.redirect(`/resources/${req.body.resourceId}`);
+  const created = await bookings.addOne(req.body);
+  return res.status(201).json(created);
 });
 
 app.delete("/bookings/:id", async (req, res) => {
