@@ -1,8 +1,8 @@
 <%- include('includes/header'); %>
-<h2><%= resource.id ? 'Redigera resurs' : 'Ny resurs' %></h2>
+<h2><%= resource._id ? 'Redigera resurs' : 'Ny resurs' %></h2>
 <form
   method="POST"
-  action="<%= resource.id ? '/resources/' + resource.id : '/resources' %>"
+  action="<%= resource._id ? '/resources/' + resource._id : '/resources' %>"
   class="resource-form"
 >
   <label for="name">Namn</label>

@@ -3,31 +3,35 @@
 <p><%= resource.type %> — <%= resource.description %></p>
 <p>Kapacitet: <%= resource.capacity %></p>
 <p>
-  <a href="/resources/<%= resource.id %>/edit" class="btn">Redigera resurs</a>
+  <a href="/resources/<%= resource._id %>/edit" class="btn">Redigera resurs</a>
 </p>
 <h3>Bokningar</h3>
 <% if (bookings.length === 0) { %>
 <p>Inga bokningar för denna resurs.</p>
 <% } %> <% bookings.forEach(function(b){ %>
 <div class="booking-card">
-  <p><strong><%= b.user %></strong></p>
-  <p><%= b.start_time %> — <%= b.end_time %></p>
+  <p><strong><%= b.bookedBy %></strong></p>
+  <p>
+  <%= new Date(b.startsAt).toLocaleString('sv-SE') %>
+  —
+  <%= new Date(b.endsAt).toLocaleString('sv-SE') %>
+</p>
   <p class="status"><%= b.status %></p>
 </div>
 <% }); %>
 
 <h3>Ny bokning</h3>
 <form method="POST" action="/bookings" class="booking-form">
-  <input type="hidden" name="resource_id" value="<%= resource.id %>" />
+  <input type="hidden" name="resourceId" value="<%= resource._id %>" />
 
   <label for="user">Användare</label>
-  <input type="text" name="user" placeholder="namn@student.bth.se" required />
+  <input type="text" name="bookedBy" placeholder="namn@student.bth.se" required />
 
   <label for="start_time">Starttid</label>
-  <input type="datetime-local" name="start_time" required />
+  <input type="datetime-local" name="startsAt" required />
 
   <label for="end_time">Sluttid</label>
-  <input type="datetime-local" name="end_time" required />
+  <input type="datetime-local" name="endsAt" required />
 
   <input type="submit" value="Boka" />
 </form>
