@@ -5,7 +5,6 @@ import cors from "cors";
 import resources from "./resources.mjs";
 import bookings from "./bookings.mjs";
 
-const port = process.env.PORT;
 const app = express();
 
 app.disable("x-powered-by");
@@ -69,6 +68,4 @@ app.delete("/bookings/:id", async (req, res) => {
   return res.json(result);
 });
 
-app.listen(port, () => {
-  console.log(`Proxmox Booking app listening on port ${port}`);
-});
+export default app;

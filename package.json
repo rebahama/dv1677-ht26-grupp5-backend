@@ -5,8 +5,8 @@
   "type": "module",
   "main": "app.mjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.mjs"
+    "test": "vitest",
+    "start": "node server.mjs"
   },
   "keywords": [],
   "author": "",
@@ -22,5 +22,10 @@
     "express": "^4.19.2",
     "mongodb": "^7.6.0",
     "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.2.0",
+    "supertest": "^7.2.2",
+    "vitest": "^5.0.1"
   }
 }
