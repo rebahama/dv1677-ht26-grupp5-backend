@@ -1,30 +1,40 @@
 import db from "./db/database.mjs";
+import { ObjectId } from "mongodb";
 
 const bookings = {
   getByResource: async function getByResource(resourceId) {
-    return db
-      .prepare(
-        "SELECT * FROM bookings WHERE resource_id = ? ORDER BY start_time"
-      )
-      .all(resourceId);
+    if (!ObjectId.isValid(resourceId)) return [];
+
+    return await db
+      .collection("bookings")
+      .find({ resourceId: new ObjectId(resourceId) })
+      .sort({ startsAt: 1 })
+      .toArray();
   },
+
   addOne: async function addOne(body) {
-    const result = db
-      .prepare(
-        "INSERT INTO bookings (resource_id, user, start_time, end_time, status) VALUES (?, ?, ?, ?, ?)"
-      )
-      .run(
-        body.resource_id,
-        body.user,
-        body.start_time,
-        body.end_time,
-        "confirmed"
-      );
-    return { lastID: result.lastInsertRowid };
+    const newBooking = {
+      resourceId: new ObjectId(body.resourceId),
+      bookedBy: body.bookedBy,
+      startsAt: body.startsAt,
+      endsAt: body.endsAt,
+      status: "confirmed",
+      createdAt: new Date(),
+    };
+
+    const result = await db.collection("bookings").insertOne(newBooking);
+
+    return { lastID: result.insertedId };
   },
+
   deleteOne: async function deleteOne(id) {
-    const result = db.prepare("DELETE FROM bookings WHERE id = ?").run(id);
-    return { changes: result.changes };
+    if (!ObjectId.isValid(id)) return { changes: 0 };
+
+    const result = await db.collection("bookings").deleteOne({
+      _id: new ObjectId(id),
+    });
+
+    return { changes: result.deletedCount };
   },
 };
 

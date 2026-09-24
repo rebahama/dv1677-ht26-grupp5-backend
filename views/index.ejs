@@ -6,7 +6,7 @@
     <% } %>
     <% resources.forEach(function(r){ %>
         <div class="resource-card">
-            <h3><a href="/resources/<%= r.id %>"><%= r.name %></a></h3>
+            <h3><a href="/resources/<%= r._id %>"><%= r.name %></a></h3>
             <p class="resource-meta"><%= r.type %> — <%= r.description %></p>
         </div>
     <% }); %>
