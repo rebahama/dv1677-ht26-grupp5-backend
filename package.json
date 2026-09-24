@@ -15,7 +15,6 @@
     "node": ">=22.23"
   },
   "dependencies": {
-    "better-sqlite3": "^13.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
