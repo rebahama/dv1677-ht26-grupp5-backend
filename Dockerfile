@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["node", "app.mjs"]
+CMD ["node", "server.mjs"]
