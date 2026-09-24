@@ -1,25 +1,24 @@
 services:
-    backend:
-        build: .
-        ports:
-            - "${PORT:-3000}:3000"
-        environment:
-            PORT: 3000
-            MONGODB_URI: mongodb://root:secret@mongodb:27017/
-            DATABASE_NAME: jsramverk
-        depends_on:
-            - mongodb
-        restart: unless-stopped
+  app:
+    image: ghcr.io/rebahama/dv1677-ht26-grupp5-backend:latest
+    container_name: grupp5-backend
+    ports:
+      - "3000:3000"
+    environment:
+      # MONGODB_URI sätts via .env-fil på VPS (injiceras av deploy.yml från GitHub Secret)
+      # Fallback: mongodb://mongodb:27017 (Docker-container, används om secret saknas)
+      - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017}
+      - DATABASE_NAME=jsramverk
+    depends_on:
+      - mongodb
+    restart: always
 
-    mongodb:
-        image: mongo:latest
-        ports:
-            - "27017:27017"
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: root
-            MONGO_INITDB_ROOT_PASSWORD: secret
-        volumes:
-            - mongodbdata:/data/db
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    volumes:
+      - mongodb_data:/data/db
+    restart: always
 
 volumes:
-    mongodbdata:
+  mongodb_data:
