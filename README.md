@@ -13,6 +13,10 @@ Vi har valt bokningssystem resource-booking-ht26
 
 Vi båda två har erfarenhet av liknande projekt och kände att detta var mest passande för oss att jobba med.
 
+## Datamodellering
+Följande datamodellering har används för tillfället för projektet:
+![Database diagram](./docs/datamod.png)
+
 ## Teknikval
 
 **Frontend-ramverk:** React / Vue / Svelte
@@ -55,7 +59,7 @@ Dessa tester har körts på API routerna för att verifiera respons datan ifrån
 ## Driftsatt
 
 - Backend: https://dv1677-spock.nplab.bth.se/resources
-- Frontend: https://grupp5.github.io/dv1677-ht26-grupp5-frontend
+- Frontend: https://rebahama.github.io/dv1677-ht26-grupp5-frontend
 
 ## Tillvägagångssätt
 
