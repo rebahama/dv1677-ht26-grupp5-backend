@@ -13,7 +13,7 @@ if (process.env.NODE_ENV === "test") {
 } else {
   client = new MongoClient(process.env.MONGODB_URI);
   await client.connect();
-  db = client.db("proxmox_booking");
+  db = client.db(process.env.DATABASE_NAME || "proxmox_booking");
   console.log("Connected to db Atlas");
 }
 
