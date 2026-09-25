@@ -9,7 +9,7 @@ services:
       # Fallback: mongodb://mongodb:27017 (Docker-container, används om secret saknas)
       - PORT=${PORT:-3000}
       - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017}
-      - DATABASE_NAME=jsramverk
+      - DATABASE_NAME=proxmox_booking
     depends_on:
       - mongodb
     restart: always
