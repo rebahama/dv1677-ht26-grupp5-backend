@@ -29,10 +29,10 @@ React kommer att användas eftersom att det finns en stor community och väldigt
 
 **Miljövariabler** (se .env.example):
 
-| Variabel    | Beskrivning                      |
-| ----------- | -------------------------------- |
+| Variabel                          | Beskrivning                      |
+| --------------------------------- | -------------------------------- |
 | MONGODB_URI = Din Mongodb databas | Anslutningssträng till MongoDB   |
-| PORT=3000   | Anslutningssträng till npm start |
+| PORT=3000                         | Anslutningssträng till npm start |
 
 ## Tester
 
@@ -43,12 +43,12 @@ För att köra tester gör följande:
 
 ### Vad som har testats
 
-Vi har testat 4 olika HTTP metoder, 
+Vi har testat 4 olika HTTP metoder,
 
-* GET
-* POST
-* PUT
-* DELETE
+- GET
+- POST
+- PUT
+- DELETE
 
 Dessa tester har körts på API routerna för att verifiera respons datan ifrån API routerna. Även att kontrollera test databasen för att verifiera all nytilkommen data som skapades med testerna finns i test databasen.
 
@@ -56,8 +56,6 @@ Dessa tester har körts på API routerna för att verifiera respons datan ifrån
 
 - Backend: https://grupp5.jsramverk.se
 - Frontend: https://grupp5.github.io/dv1677-ht26-grupp5-frontend
-
-
 
 ## Tillvägagångssätt
 
@@ -67,6 +65,6 @@ Dokumentera löpande vad ni gjort och hur ni löst problem.
 
 - Vecka 2: Implementerade uppdatering av resurs. updateOne lades till i resources.mjs. app.mjs fick PUT /resources/:id och POST /resources/:id så att både API och HTML-formuläret kan spara. Formuläret postar till /resources/:id vid redigering. Knappen “Redigera resurs” lades till på resurssidan. Testat: nytt kan skapas och befintligt kan uppdateras .
 
-- Vecka 3: Gjorde en migrering ifrån SQL till MongoDb, först installerades mongoDB sedan skapades en databas i MongoDb Atlas. Efter detta så gjordes database.mjs filen om till att kunna köra en anslutning till den nya databasen ifrån föregående SQL. Syntaxen för att skapa och rendera datan i den nya databasen gjordes om i booking.mjs filen och resources.mjs, detta för att kunna utföra samma funktioner som tidigare när sql databasen fanns som anslutning. När allt detta var klart så lades samma data som tidigare in i databasen ifrån localhost:3000 gränsnittet och allting fungerade, även i Mongo Db Atlas sidan så kontrollerades att all data fanns på plats.
+- Vecka 3: Gjorde en migrering ifrån SQL till MongoDb, först installerades mongoDB sedan skapades en databas i MongoDb Atlas. Efter detta så gjordes database.mjs filen om till att kunna köra en anslutning till den nya databasen ifrån föregående SQL. Syntaxen för att skapa och rendera datan i den nya databasen gjordes om i booking.mjs filen och resources.mjs, detta för att kunna utföra samma funktioner som tidigare när sql databasen fanns som anslutning. När allt detta var klart så lades samma data som tidigare in i databasen ifrån localhost:3000 gränsnittet och allting fungerade, även i Mongo Db Atlas sidan så kontrollerades att all data fanns på plats. Backend gjordes även om till ett JSON-API: EJS togs bort och alla routes svarar med JSON.
 
-- Vecka 4: Installerade Vitest för att köra själva testerna, Supertest användes till att testa Express API routerna. Även MongoDb memory server användes till att temporärt lägga in test datan istället för att använda sig av produktions databasen. Konfiguerade om i database.mjs filen så att när script test körs då används MongoDb memory och när "npm start" körs då är det produktions databasen som körs. Även server.mjs filen skapades så att när tester körs igång med "npm test" då kommer inte servern att startas igång pga testerna.
+- Vecka 4: Installerade Vitest för att köra själva testerna, Supertest användes till att testa Express API routerna. Även MongoDb memory server användes till att temporärt lägga in test datan istället för att använda sig av produktions databasen. Konfiguerade om i database.mjs filen så att när script test körs då används MongoDb memory och när "npm start" körs då är det produktions databasen som körs. Även server.mjs filen skapades så att när tester körs igång med "npm test" då kommer inte servern att startas igång pga testerna. Backend containeriserades och driftsattes på VPS:en dv1677-spock med Docker, Caddy och GitHub Actions. Flera fel längs vägen (SQLite i imagen, memory-server i produktion, saknad PORT, Atlas-IP) åtgärdades. API:t är nåbart via HTTPS.
