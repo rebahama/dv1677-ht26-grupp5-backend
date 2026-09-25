@@ -54,7 +54,7 @@ Dessa tester har körts på API routerna för att verifiera respons datan ifrån
 
 ## Driftsatt
 
-- Backend: https://grupp5.jsramverk.se
+- Backend: https://dv1677-spock.nplab.bth.se/resources
 - Frontend: https://grupp5.github.io/dv1677-ht26-grupp5-frontend
 
 ## Tillvägagångssätt
