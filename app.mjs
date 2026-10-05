@@ -4,6 +4,7 @@ import morgan from "morgan";
 import cors from "cors";
 import resources from "./resources.mjs";
 import bookings from "./bookings.mjs";
+import authRouter from "./route/auth.mjs";
 
 const app = express();
 
@@ -14,6 +15,10 @@ app.use(cors());
 if (process.env.NODE_ENV !== "test") {
   app.use(morgan("combined"));
 }
+
+// --- auth ---
+
+app.use("/api/auth", authRouter);
 
 // --- Resurser ---
 
