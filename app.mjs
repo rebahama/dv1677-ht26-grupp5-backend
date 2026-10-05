@@ -59,6 +59,16 @@ app.post("/resources/:id", async (req, res) => {
 // --- Bokningar ---
 
 app.post("/bookings", async (req, res) => {
+  const { resourceId, startsAt, endsAt } = req.body;
+
+  const overlap = await bookings.hasOverlap(resourceId, startsAt, endsAt);
+
+  if (overlap) {
+    return res.status(409).json({
+      error: "Resource is already booked for this time",
+    });
+  }
+
   const created = await bookings.addOne(req.body);
   return res.status(201).json(created);
 });

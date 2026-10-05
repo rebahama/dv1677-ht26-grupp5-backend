@@ -1,5 +1,6 @@
 import db from "./db/database.mjs";
 import { ObjectId } from "mongodb";
+import { bookingsOverlap } from "./domain/overlap.mjs";
 
 const bookings = {
   getByResource: async function getByResource(resourceId) {
@@ -10,6 +11,24 @@ const bookings = {
       .find({ resourceId: new ObjectId(resourceId) })
       .sort({ startsAt: 1 })
       .toArray();
+  },
+
+  hasOverlap: async function hasOverlap(resourceId, startsAt, endsAt) {
+    if (!ObjectId.isValid(resourceId)) {
+      return false;
+    }
+
+    const existingBookings = await db
+      .collection("bookings")
+      .find({
+        resourceId: new ObjectId(resourceId),
+        status: "confirmed",
+      })
+      .toArray();
+
+    return existingBookings.some((booking) =>
+      bookingsOverlap(startsAt, endsAt, booking.startsAt, booking.endsAt)
+    );
   },
 
   addOne: async function addOne(body) {

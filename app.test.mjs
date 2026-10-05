@@ -94,3 +94,77 @@ describe("PUT /resource:id", () => {
 
     });
 })
+
+describe("POST /bookings - overlap", () => {
+    it("should return 409 when bookings overlap", async () => {
+        const resource = await db.collection("resources").insertOne({
+            name: "Booking Test Resource",
+            type: "vm",
+            description: "Resource for overlap test",
+            capacity: 1,
+            active: true,
+            createdAt: new Date(),
+        });
+
+        const resourceId = resource.insertedId.toString();
+
+        const firstBooking = await request(app)
+            .post("/bookings")
+            .send({
+                resourceId: resourceId,
+                bookedBy: "test-user",
+                startsAt: "2026-10-10T10:00:00Z",
+                endsAt: "2026-10-10T12:00:00Z",
+            });
+
+        expect(firstBooking.status).toBe(201);
+
+        const overlappingBooking = await request(app)
+            .post("/bookings")
+            .send({
+                resourceId: resourceId,
+                bookedBy: "second-user",
+                startsAt: "2026-10-10T11:00:00Z",
+                endsAt: "2026-10-10T13:00:00Z",
+            });
+
+        expect(overlappingBooking.status).toBe(409);
+        expect(overlappingBooking.body.error).toBe(
+            "Resource is already booked for this time"
+        );
+    });
+    it("should allow a booking that starts when another booking ends", async () => {
+        const resource = await db.collection("resources").insertOne({
+            name: "Adjacent Booking Resource",
+            type: "vm",
+            description: "Resource for adjacent booking test",
+            capacity: 1,
+            active: true,
+            createdAt: new Date(),
+        });
+    
+        const resourceId = resource.insertedId.toString();
+    
+        const firstBooking = await request(app)
+            .post("/bookings")
+            .send({
+                resourceId: resourceId,
+                bookedBy: "test-user",
+                startsAt: "2026-10-11T10:00:00Z",
+                endsAt: "2026-10-11T12:00:00Z",
+            });
+    
+        expect(firstBooking.status).toBe(201);
+    
+        const secondBooking = await request(app)
+            .post("/bookings")
+            .send({
+                resourceId: resourceId,
+                bookedBy: "second-user",
+                startsAt: "2026-10-11T12:00:00Z",
+                endsAt: "2026-10-11T14:00:00Z",
+            });
+    
+        expect(secondBooking.status).toBe(201);
+    });
+});
