@@ -33,6 +33,7 @@ React kommer att användas eftersom att det finns en stor community och väldigt
 | --------------------------------- | -------------------------------- |
 | MONGODB_URI = Din Mongodb databas | Anslutningssträng till MongoDB   |
 | PORT=3000                         | Anslutningssträng till npm start |
+| JWT_SECRET= Din hemliga kod       | En hemlig kod för att verifiera autentisering |
 
 ## Tester
 
@@ -68,3 +69,7 @@ Dokumentera löpande vad ni gjort och hur ni löst problem.
 - Vecka 3: Gjorde en migrering ifrån SQL till MongoDb, först installerades mongoDB sedan skapades en databas i MongoDb Atlas. Efter detta så gjordes database.mjs filen om till att kunna köra en anslutning till den nya databasen ifrån föregående SQL. Syntaxen för att skapa och rendera datan i den nya databasen gjordes om i booking.mjs filen och resources.mjs, detta för att kunna utföra samma funktioner som tidigare när sql databasen fanns som anslutning. När allt detta var klart så lades samma data som tidigare in i databasen ifrån localhost:3000 gränsnittet och allting fungerade, även i Mongo Db Atlas sidan så kontrollerades att all data fanns på plats. Backend gjordes även om till ett JSON-API: EJS togs bort och alla routes svarar med JSON.
 
 - Vecka 4: Installerade Vitest för att köra själva testerna, Supertest användes till att testa Express API routerna. Även MongoDb memory server användes till att temporärt lägga in test datan istället för att använda sig av produktions databasen. Konfiguerade om i database.mjs filen så att när script test körs då används MongoDb memory och när "npm start" körs då är det produktions databasen som körs. Även server.mjs filen skapades så att när tester körs igång med "npm test" då kommer inte servern att startas igång pga testerna. Backend containeriserades och driftsattes på VPS:en dv1677-spock med Docker, Caddy och GitHub Actions. Flera fel längs vägen (SQLite i imagen, memory-server i produktion, saknad PORT, Atlas-IP) åtgärdades. API:t är nåbart via HTTPS.
+
+- Vecka 5: Allting kontrollerades för att säkerhetsställa att backenden fungerar och returnerar routesen för uppgiften. Även databasen kontrollerades så att inte data hamnar i produktionsdatabasen utan i test databasen.
+
+- Vecka 6: JWT installerades och initierades för att användas för inloggningen och för att skydda olika relevanta routes, curl -i x användes i terminalen för bash genom att kontrollera att rätt användare har behörighet att utföra rätt uppgifter. Exempelvis måste man vara inloggad för att kunna göra en bokning eller radera. Även app.mjs refactoredes om så att den anropar booknings routen, en route folder skapades där crud operationer utfördes för bookningar som sedan i sin tur importerar i från en models folder som skapades till att utföra databas inställningar.

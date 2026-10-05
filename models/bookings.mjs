@@ -43,6 +43,18 @@ const bookings = {
 
     return { changes: result.deletedCount };
   },
+
+  getByUser: async function getByUser(user) {
+    if (!ObjectId.isValid(user.id)) return [];
+
+    return await db
+      .collection("bookings")
+      .find({
+        user: new ObjectId(user.id),
+      })
+      .sort({ startsAt: 1 })
+      .toArray();
+  },
 };
 
 export default bookings;

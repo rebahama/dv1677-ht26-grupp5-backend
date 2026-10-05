@@ -16,5 +16,11 @@ router.delete("/:id", requireAuth, async (req, res) => {
     return res.json(result);
 });
 
+router.get("/", requireAuth, async (req, res) => {
+    const result = await bookings.getByUser(req.user);
+
+    return res.json(result);
+});
+
 
 export default router;
