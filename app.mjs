@@ -3,7 +3,9 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import resources from "./resources.mjs";
-import bookings from "./bookings.mjs";
+import bookings from "./models/bookings.mjs";
+import authRouter from "./route/auth.mjs";
+import bookingsRouter from "./route/booking.mjs";
 
 const app = express();
 
@@ -14,6 +16,11 @@ app.use(cors());
 if (process.env.NODE_ENV !== "test") {
   app.use(morgan("combined"));
 }
+
+
+// --- auth ---
+
+app.use("/api/auth", authRouter);
 
 // --- Resurser ---
 
@@ -57,15 +64,7 @@ app.post("/resources/:id", async (req, res) => {
 });
 
 // --- Bokningar ---
+app.use("/bookings", bookingsRouter);
 
-app.post("/bookings", async (req, res) => {
-  const created = await bookings.addOne(req.body);
-  return res.status(201).json(created);
-});
-
-app.delete("/bookings/:id", async (req, res) => {
-  const result = await bookings.deleteOne(req.params.id);
-  return res.json(result);
-});
 
 export default app;
