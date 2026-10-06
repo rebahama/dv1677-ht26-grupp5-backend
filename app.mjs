@@ -58,6 +58,16 @@ app.post("/resources/:id", async (req, res) => {
 
 // --- Bokningar ---
 
+app.get("/bookings/availability", async (req, res) => {
+  const { resourceId, startsAt, endsAt } = req.query;
+
+  const overlap = await bookings.hasOverlap(resourceId, startsAt, endsAt);
+
+  return res.json({
+    available: !overlap,
+  });
+});
+
 app.post("/bookings", async (req, res) => {
   const { resourceId, startsAt, endsAt } = req.body;
 

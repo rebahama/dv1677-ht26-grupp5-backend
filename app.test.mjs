@@ -168,3 +168,74 @@ describe("POST /bookings - overlap", () => {
         expect(secondBooking.status).toBe(201);
     });
 });
+
+describe("GET /bookings/availability", () => {
+    it("should return false when the resource is already booked", async () => {
+        const resource = await db.collection("resources").insertOne({
+            name: "Availability Test Resource",
+            type: "vm",
+            description: "Resource for availability test",
+            capacity: 1,
+            active: true,
+            createdAt: new Date(),
+        });
+
+        const resourceId = resource.insertedId.toString();
+
+        const booking = await request(app)
+            .post("/bookings")
+            .send({
+                resourceId: resourceId,
+                bookedBy: "test-user",
+                startsAt: "2026-10-12T10:00:00Z",
+                endsAt: "2026-10-12T12:00:00Z",
+            });
+
+        expect(booking.status).toBe(201);
+
+        const response = await request(app)
+            .get("/bookings/availability")
+            .query({
+                resourceId: resourceId,
+                startsAt: "2026-10-12T11:00:00Z",
+                endsAt: "2026-10-12T13:00:00Z",
+            });
+
+        expect(response.status).toBe(200);
+        expect(response.body.available).toBe(false);
+    });
+    it("should return true when the resource is available", async () => {
+        const resource = await db.collection("resources").insertOne({
+            name: "Available Resource",
+            type: "vm",
+            description: "Resource for availability test",
+            capacity: 1,
+            active: true,
+            createdAt: new Date(),
+        });
+    
+        const resourceId = resource.insertedId.toString();
+    
+        const booking = await request(app)
+            .post("/bookings")
+            .send({
+                resourceId: resourceId,
+                bookedBy: "test-user",
+                startsAt: "2026-10-13T10:00:00Z",
+                endsAt: "2026-10-13T12:00:00Z",
+            });
+    
+        expect(booking.status).toBe(201);
+    
+        const response = await request(app)
+            .get("/bookings/availability")
+            .query({
+                resourceId: resourceId,
+                startsAt: "2026-10-13T13:00:00Z",
+                endsAt: "2026-10-13T15:00:00Z",
+            });
+    
+        expect(response.status).toBe(200);
+        expect(response.body.available).toBe(true);
+    });
+});
