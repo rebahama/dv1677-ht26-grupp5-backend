@@ -60,7 +60,14 @@ export function validateBooking(booking) {
         error: "startsAt must be before endsAt",
       };
     }
-  
+    
+    if (start < new Date()) {
+        return {
+            valid: false,
+            error: "Cannot book a time in the past",
+        };
+    }
+    
     return {
       valid: true,
     };

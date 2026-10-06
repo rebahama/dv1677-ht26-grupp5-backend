@@ -371,6 +371,22 @@ describe("POST /bookings - policy", () => {
             "startsAt must be before endsAt"
         );
     });
+
+    it("should return 400 when booking starts in the past", async () => {
+        const response = await request(app)
+            .post("/bookings")
+            .send({
+                resourceId: "507f1f77bcf86cd799439011",
+                bookedBy: "test-user",
+                startsAt: "2020-01-01T10:00:00Z",
+                endsAt: "2020-01-01T12:00:00Z",
+            });
+    
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe(
+            "Cannot book a time in the past"
+        );
+    });
 });
 
 describe("getAvailableTimes", () => {
