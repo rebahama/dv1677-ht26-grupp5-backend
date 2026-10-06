@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import request from "supertest";
 import app from "./app.mjs";
 import db from "./db/database.mjs";
-
+import { getAvailableTimes } from "./domain/availability.mjs";
 describe("GET /", () => {
     it("should return status 200", async () => {
         const response = await request(app).get("/");
@@ -133,6 +133,7 @@ describe("POST /bookings - overlap", () => {
             "Resource is already booked for this time"
         );
     });
+
     it("should allow a booking that starts when another booking ends", async () => {
         const resource = await db.collection("resources").insertOne({
             name: "Adjacent Booking Resource",
@@ -142,9 +143,9 @@ describe("POST /bookings - overlap", () => {
             active: true,
             createdAt: new Date(),
         });
-    
+
         const resourceId = resource.insertedId.toString();
-    
+
         const firstBooking = await request(app)
             .post("/bookings")
             .send({
@@ -153,9 +154,9 @@ describe("POST /bookings - overlap", () => {
                 startsAt: "2026-10-11T10:00:00Z",
                 endsAt: "2026-10-11T12:00:00Z",
             });
-    
+
         expect(firstBooking.status).toBe(201);
-    
+
         const secondBooking = await request(app)
             .post("/bookings")
             .send({
@@ -164,13 +165,13 @@ describe("POST /bookings - overlap", () => {
                 startsAt: "2026-10-11T12:00:00Z",
                 endsAt: "2026-10-11T14:00:00Z",
             });
-    
+
         expect(secondBooking.status).toBe(201);
     });
 });
 
 describe("GET /bookings/availability", () => {
-    it("should return false when the resource is already booked", async () => {
+    it("should return available times for a resource", async () => {
         const resource = await db.collection("resources").insertOne({
             name: "Availability Test Resource",
             type: "vm",
@@ -197,46 +198,22 @@ describe("GET /bookings/availability", () => {
             .get("/bookings/availability")
             .query({
                 resourceId: resourceId,
-                startsAt: "2026-10-12T11:00:00Z",
-                endsAt: "2026-10-12T13:00:00Z",
+                dayStart: "2026-10-12T08:00:00Z",
+                dayEnd: "2026-10-12T18:00:00Z",
             });
 
         expect(response.status).toBe(200);
-        expect(response.body.available).toBe(false);
-    });
-    it("should return true when the resource is available", async () => {
-        const resource = await db.collection("resources").insertOne({
-            name: "Available Resource",
-            type: "vm",
-            description: "Resource for availability test",
-            capacity: 1,
-            active: true,
-            createdAt: new Date(),
-        });
-    
-        const resourceId = resource.insertedId.toString();
-    
-        const booking = await request(app)
-            .post("/bookings")
-            .send({
-                resourceId: resourceId,
-                bookedBy: "test-user",
-                startsAt: "2026-10-13T10:00:00Z",
-                endsAt: "2026-10-13T12:00:00Z",
-            });
-    
-        expect(booking.status).toBe(201);
-    
-        const response = await request(app)
-            .get("/bookings/availability")
-            .query({
-                resourceId: resourceId,
-                startsAt: "2026-10-13T13:00:00Z",
-                endsAt: "2026-10-13T15:00:00Z",
-            });
-    
-        expect(response.status).toBe(200);
-        expect(response.body.available).toBe(true);
+
+        expect(response.body.availableTimes).toEqual([
+            {
+                startsAt: "2026-10-12T08:00:00.000Z",
+                endsAt: "2026-10-12T10:00:00.000Z",
+            },
+            {
+                startsAt: "2026-10-12T12:00:00.000Z",
+                endsAt: "2026-10-12T18:00:00.000Z",
+            },
+        ]);
     });
 });
 
@@ -253,6 +230,7 @@ describe("POST /bookings - policy", () => {
         expect(response.status).toBe(400);
         expect(response.body.error).toBe("resourceId is required");
     });
+
     it("should return 400 when bookedBy is missing", async () => {
         const response = await request(app)
             .post("/bookings")
@@ -261,7 +239,7 @@ describe("POST /bookings - policy", () => {
                 startsAt: "2026-10-15T10:00:00Z",
                 endsAt: "2026-10-15T12:00:00Z",
             });
-    
+
         expect(response.status).toBe(400);
         expect(response.body.error).toBe("bookedBy is required");
     });
@@ -275,13 +253,13 @@ describe("POST /bookings - policy", () => {
                 startsAt: "2026-10-15T10:00:00Z",
                 endsAt: "2026-10-15T12:00:00Z",
             });
-    
+
         expect(response.status).toBe(400);
         expect(response.body.error).toBe(
             "resourceId must be a valid id"
         );
     });
-    
+
     it("should return 400 when startsAt is missing", async () => {
         const response = await request(app)
             .post("/bookings")
@@ -290,11 +268,11 @@ describe("POST /bookings - policy", () => {
                 bookedBy: "test-user",
                 endsAt: "2026-10-15T12:00:00Z",
             });
-    
+
         expect(response.status).toBe(400);
         expect(response.body.error).toBe("startsAt is required");
     });
-    
+
     it("should return 400 when endsAt is missing", async () => {
         const response = await request(app)
             .post("/bookings")
@@ -303,11 +281,11 @@ describe("POST /bookings - policy", () => {
                 bookedBy: "test-user",
                 startsAt: "2026-10-15T10:00:00Z",
             });
-    
+
         expect(response.status).toBe(400);
         expect(response.body.error).toBe("endsAt is required");
     });
-    
+
     it("should return 400 when startsAt is not a valid date", async () => {
         const response = await request(app)
             .post("/bookings")
@@ -317,13 +295,13 @@ describe("POST /bookings - policy", () => {
                 startsAt: "not-a-date",
                 endsAt: "2026-10-15T12:00:00Z",
             });
-    
+
         expect(response.status).toBe(400);
         expect(response.body.error).toBe(
             "startsAt must be a valid date"
         );
     });
-    
+
     it("should return 400 when endsAt is not a valid date", async () => {
         const response = await request(app)
             .post("/bookings")
@@ -333,13 +311,13 @@ describe("POST /bookings - policy", () => {
                 startsAt: "2026-10-15T10:00:00Z",
                 endsAt: "not-a-date",
             });
-    
+
         expect(response.status).toBe(400);
         expect(response.body.error).toBe(
             "endsAt must be a valid date"
         );
     });
-    
+
     it("should create a booking when the booking is valid", async () => {
         const resource = await db.collection("resources").insertOne({
             name: "Policy Test Resource",
@@ -349,7 +327,7 @@ describe("POST /bookings - policy", () => {
             active: true,
             createdAt: new Date(),
         });
-    
+
         const response = await request(app)
             .post("/bookings")
             .send({
@@ -358,10 +336,10 @@ describe("POST /bookings - policy", () => {
                 startsAt: "2026-10-15T10:00:00Z",
                 endsAt: "2026-10-15T12:00:00Z",
             });
-    
+
         expect(response.status).toBe(201);
     });
-    
+
     it("should return 400 when startsAt is after endsAt", async () => {
         const response = await request(app)
             .post("/bookings")
@@ -371,7 +349,7 @@ describe("POST /bookings - policy", () => {
                 startsAt: "2026-10-14T15:00:00Z",
                 endsAt: "2026-10-14T12:00:00Z",
             });
-    
+
         expect(response.status).toBe(400);
         expect(response.body.error).toBe(
             "startsAt must be before endsAt"
@@ -387,10 +365,138 @@ describe("POST /bookings - policy", () => {
                 startsAt: "2026-10-14T12:00:00Z",
                 endsAt: "2026-10-14T12:00:00Z",
             });
-    
+
         expect(response.status).toBe(400);
         expect(response.body.error).toBe(
             "startsAt must be before endsAt"
         );
+    });
+});
+
+describe("getAvailableTimes", () => {
+    it("should return the whole day when there are no bookings", () => {
+        const result = getAvailableTimes(
+            [],
+            "2026-10-16T08:00:00Z",
+            "2026-10-16T18:00:00Z"
+        );
+
+        expect(result).toEqual([
+            {
+                startsAt: new Date("2026-10-16T08:00:00Z"),
+                endsAt: new Date("2026-10-16T18:00:00Z"),
+            },
+        ]);
+    });
+
+    it("should return no available times when a booking covers the whole day", () => {
+        const bookings = [
+            {
+                startsAt: "2026-10-16T08:00:00Z",
+                endsAt: "2026-10-16T18:00:00Z",
+            },
+        ];
+
+        const result = getAvailableTimes(
+            bookings,
+            "2026-10-16T08:00:00Z",
+            "2026-10-16T18:00:00Z"
+        );
+
+        expect(result).toEqual([]);
+    });
+
+    it("should handle bookings that are directly next to each other", () => {
+        const bookings = [
+            {
+                startsAt: "2026-10-16T10:00:00Z",
+                endsAt: "2026-10-16T12:00:00Z",
+            },
+            {
+                startsAt: "2026-10-16T12:00:00Z",
+                endsAt: "2026-10-16T14:00:00Z",
+            },
+        ];
+
+        const result = getAvailableTimes(
+            bookings,
+            "2026-10-16T08:00:00Z",
+            "2026-10-16T18:00:00Z"
+        );
+
+        expect(result).toEqual([
+            {
+                startsAt: new Date("2026-10-16T08:00:00Z"),
+                endsAt: new Date("2026-10-16T10:00:00Z"),
+            },
+            {
+                startsAt: new Date("2026-10-16T14:00:00Z"),
+                endsAt: new Date("2026-10-16T18:00:00Z"),
+            },
+        ]);
+    });
+
+    it("should handle overlapping bookings", () => {
+        const bookings = [
+            {
+                startsAt: "2026-10-16T10:00:00Z",
+                endsAt: "2026-10-16T14:00:00Z",
+            },
+            {
+                startsAt: "2026-10-16T12:00:00Z",
+                endsAt: "2026-10-16T16:00:00Z",
+            },
+        ];
+
+        const result = getAvailableTimes(
+            bookings,
+            "2026-10-16T08:00:00Z",
+            "2026-10-16T18:00:00Z"
+        );
+
+        expect(result).toEqual([
+            {
+                startsAt: new Date("2026-10-16T08:00:00Z"),
+                endsAt: new Date("2026-10-16T10:00:00Z"),
+            },
+            {
+                startsAt: new Date("2026-10-16T16:00:00Z"),
+                endsAt: new Date("2026-10-16T18:00:00Z"),
+            },
+        ]);
+    });
+
+    it("should return available times between bookings", () => {
+        const bookings = [
+            {
+                startsAt: "2026-10-16T10:00:00Z",
+                endsAt: "2026-10-16T12:00:00Z",
+            },
+            {
+                startsAt: "2026-10-16T14:00:00Z",
+                endsAt: "2026-10-16T16:00:00Z",
+            },
+        ];
+
+        const result = getAvailableTimes(
+            bookings,
+            "2026-10-16T08:00:00Z",
+            "2026-10-16T18:00:00Z"
+        );
+
+        expect(result).toEqual([
+            {
+                startsAt: new Date("2026-10-16T08:00:00Z"),
+                endsAt: new Date("2026-10-16T10:00:00Z"),
+            },
+            {
+                startsAt: new Date("2026-10-16T12:00:00Z"),
+                endsAt: new Date("2026-10-16T14:00:00Z"),
+            },
+            {
+                startsAt: new Date("2026-10-16T16:00:00Z"),
+                endsAt: new Date("2026-10-16T18:00:00Z"),
+            },
+        ]);
     });
 });

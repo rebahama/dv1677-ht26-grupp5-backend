@@ -5,6 +5,7 @@ import cors from "cors";
 import resources from "./resources.mjs";
 import bookings from "./bookings.mjs";
 import { validateBooking } from "./domain/policy.mjs";
+import { getAvailableTimes } from "./domain/availability.mjs";
 
 const app = express();
 
@@ -60,12 +61,18 @@ app.post("/resources/:id", async (req, res) => {
 // --- Bokningar ---
 
 app.get("/bookings/availability", async (req, res) => {
-  const { resourceId, startsAt, endsAt } = req.query;
+  const { resourceId, dayStart, dayEnd } = req.query;
 
-  const overlap = await bookings.hasOverlap(resourceId, startsAt, endsAt);
+  const resourceBookings = await bookings.getByResource(resourceId);
+
+  const availableTimes = getAvailableTimes(
+    resourceBookings,
+    dayStart,
+    dayEnd
+  );
 
   return res.json({
-    available: !overlap,
+    availableTimes,
   });
 });
 
