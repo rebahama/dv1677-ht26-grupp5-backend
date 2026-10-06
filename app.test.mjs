@@ -239,3 +239,158 @@ describe("GET /bookings/availability", () => {
         expect(response.body.available).toBe(true);
     });
 });
+
+describe("POST /bookings - policy", () => {
+    it("should return 400 when resourceId is missing", async () => {
+        const response = await request(app)
+            .post("/bookings")
+            .send({
+                bookedBy: "test-user",
+                startsAt: "2026-10-14T10:00:00Z",
+                endsAt: "2026-10-14T12:00:00Z",
+            });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe("resourceId is required");
+    });
+    it("should return 400 when bookedBy is missing", async () => {
+        const response = await request(app)
+            .post("/bookings")
+            .send({
+                resourceId: "507f1f77bcf86cd799439011",
+                startsAt: "2026-10-15T10:00:00Z",
+                endsAt: "2026-10-15T12:00:00Z",
+            });
+    
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe("bookedBy is required");
+    });
+
+    it("should return 400 when resourceId is invalid", async () => {
+        const response = await request(app)
+            .post("/bookings")
+            .send({
+                resourceId: "abc",
+                bookedBy: "test-user",
+                startsAt: "2026-10-15T10:00:00Z",
+                endsAt: "2026-10-15T12:00:00Z",
+            });
+    
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe(
+            "resourceId must be a valid id"
+        );
+    });
+    
+    it("should return 400 when startsAt is missing", async () => {
+        const response = await request(app)
+            .post("/bookings")
+            .send({
+                resourceId: "507f1f77bcf86cd799439011",
+                bookedBy: "test-user",
+                endsAt: "2026-10-15T12:00:00Z",
+            });
+    
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe("startsAt is required");
+    });
+    
+    it("should return 400 when endsAt is missing", async () => {
+        const response = await request(app)
+            .post("/bookings")
+            .send({
+                resourceId: "507f1f77bcf86cd799439011",
+                bookedBy: "test-user",
+                startsAt: "2026-10-15T10:00:00Z",
+            });
+    
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe("endsAt is required");
+    });
+    
+    it("should return 400 when startsAt is not a valid date", async () => {
+        const response = await request(app)
+            .post("/bookings")
+            .send({
+                resourceId: "507f1f77bcf86cd799439011",
+                bookedBy: "test-user",
+                startsAt: "not-a-date",
+                endsAt: "2026-10-15T12:00:00Z",
+            });
+    
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe(
+            "startsAt must be a valid date"
+        );
+    });
+    
+    it("should return 400 when endsAt is not a valid date", async () => {
+        const response = await request(app)
+            .post("/bookings")
+            .send({
+                resourceId: "507f1f77bcf86cd799439011",
+                bookedBy: "test-user",
+                startsAt: "2026-10-15T10:00:00Z",
+                endsAt: "not-a-date",
+            });
+    
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe(
+            "endsAt must be a valid date"
+        );
+    });
+    
+    it("should create a booking when the booking is valid", async () => {
+        const resource = await db.collection("resources").insertOne({
+            name: "Policy Test Resource",
+            type: "vm",
+            description: "Resource for valid policy test",
+            capacity: 1,
+            active: true,
+            createdAt: new Date(),
+        });
+    
+        const response = await request(app)
+            .post("/bookings")
+            .send({
+                resourceId: resource.insertedId.toString(),
+                bookedBy: "test-user",
+                startsAt: "2026-10-15T10:00:00Z",
+                endsAt: "2026-10-15T12:00:00Z",
+            });
+    
+        expect(response.status).toBe(201);
+    });
+    
+    it("should return 400 when startsAt is after endsAt", async () => {
+        const response = await request(app)
+            .post("/bookings")
+            .send({
+                resourceId: "507f1f77bcf86cd799439011",
+                bookedBy: "test-user",
+                startsAt: "2026-10-14T15:00:00Z",
+                endsAt: "2026-10-14T12:00:00Z",
+            });
+    
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe(
+            "startsAt must be before endsAt"
+        );
+    });
+
+    it("should return 400 when startsAt equals endsAt", async () => {
+        const response = await request(app)
+            .post("/bookings")
+            .send({
+                resourceId: "507f1f77bcf86cd799439011",
+                bookedBy: "test-user",
+                startsAt: "2026-10-14T12:00:00Z",
+                endsAt: "2026-10-14T12:00:00Z",
+            });
+    
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe(
+            "startsAt must be before endsAt"
+        );
+    });
+});

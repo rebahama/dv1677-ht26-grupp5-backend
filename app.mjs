@@ -4,6 +4,7 @@ import morgan from "morgan";
 import cors from "cors";
 import resources from "./resources.mjs";
 import bookings from "./bookings.mjs";
+import { validateBooking } from "./domain/policy.mjs";
 
 const app = express();
 
@@ -69,6 +70,13 @@ app.get("/bookings/availability", async (req, res) => {
 });
 
 app.post("/bookings", async (req, res) => {
+  const validation = validateBooking(req.body);
+
+  if (!validation.valid) {
+    return res.status(400).json({
+      error: validation.error,
+    });
+  }
   const { resourceId, startsAt, endsAt } = req.body;
 
   const overlap = await bookings.hasOverlap(resourceId, startsAt, endsAt);
