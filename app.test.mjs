@@ -1,8 +1,34 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect,beforeAll } from "vitest";
 import request from "supertest";
 import app from "./app.mjs";
 import db from "./db/database.mjs";
 import { getAvailableTimes } from "./domain/availability.mjs";
+
+async function getAuthToken() {
+    const email = `test-${Date.now()}-${Math.random()}@example.com`;
+    const password = "test-password";
+
+    const registerResponse = await request(app)
+        .post("/api/auth/register")
+        .send({
+            email,
+            password,
+        });
+
+    expect(registerResponse.status).toBe(201);
+
+    const loginResponse = await request(app)
+        .post("/api/auth/login")
+        .send({
+            email,
+            password,
+        });
+
+    expect(loginResponse.status).toBe(200);
+
+    return loginResponse.body.token;
+}
+
 describe("GET /", () => {
     it("should return status 200", async () => {
         const response = await request(app).get("/");
@@ -97,6 +123,8 @@ describe("PUT /resource:id", () => {
 
 describe("POST /bookings - overlap", () => {
     it("should return 409 when bookings overlap", async () => {
+        const token = await getAuthToken();
+
         const resource = await db.collection("resources").insertOne({
             name: "Booking Test Resource",
             type: "vm",
@@ -110,6 +138,7 @@ describe("POST /bookings - overlap", () => {
 
         const firstBooking = await request(app)
             .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: resourceId,
                 bookedBy: "test-user",
@@ -121,6 +150,7 @@ describe("POST /bookings - overlap", () => {
 
         const overlappingBooking = await request(app)
             .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: resourceId,
                 bookedBy: "second-user",
@@ -135,6 +165,7 @@ describe("POST /bookings - overlap", () => {
     });
 
     it("should allow a booking that starts when another booking ends", async () => {
+        const token = await getAuthToken();
         const resource = await db.collection("resources").insertOne({
             name: "Adjacent Booking Resource",
             type: "vm",
@@ -148,6 +179,7 @@ describe("POST /bookings - overlap", () => {
 
         const firstBooking = await request(app)
             .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: resourceId,
                 bookedBy: "test-user",
@@ -159,6 +191,7 @@ describe("POST /bookings - overlap", () => {
 
         const secondBooking = await request(app)
             .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: resourceId,
                 bookedBy: "second-user",
@@ -172,6 +205,7 @@ describe("POST /bookings - overlap", () => {
 
 describe("GET /bookings/availability", () => {
     it("should return available times for a resource", async () => {
+        const token = await getAuthToken();
         const resource = await db.collection("resources").insertOne({
             name: "Availability Test Resource",
             type: "vm",
@@ -185,6 +219,7 @@ describe("GET /bookings/availability", () => {
 
         const booking = await request(app)
             .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: resourceId,
                 bookedBy: "test-user",
@@ -196,6 +231,7 @@ describe("GET /bookings/availability", () => {
 
         const response = await request(app)
             .get("/bookings/availability")
+            .set("Authorization", `Bearer ${token}`)
             .query({
                 resourceId: resourceId,
                 dayStart: "2026-10-12T08:00:00Z",
@@ -218,9 +254,14 @@ describe("GET /bookings/availability", () => {
 });
 
 describe("POST /bookings - policy", () => {
+    let token;
+    beforeAll(async () => {
+        token = await getAuthToken();
+    });
     it("should return 400 when resourceId is missing", async () => {
         const response = await request(app)
             .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 bookedBy: "test-user",
                 startsAt: "2026-10-14T10:00:00Z",
@@ -234,6 +275,7 @@ describe("POST /bookings - policy", () => {
     it("should return 400 when bookedBy is missing", async () => {
         const response = await request(app)
             .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: "507f1f77bcf86cd799439011",
                 startsAt: "2026-10-15T10:00:00Z",
@@ -247,6 +289,7 @@ describe("POST /bookings - policy", () => {
     it("should return 400 when resourceId is invalid", async () => {
         const response = await request(app)
             .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: "abc",
                 bookedBy: "test-user",
@@ -263,6 +306,7 @@ describe("POST /bookings - policy", () => {
     it("should return 400 when startsAt is missing", async () => {
         const response = await request(app)
             .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: "507f1f77bcf86cd799439011",
                 bookedBy: "test-user",
@@ -276,6 +320,7 @@ describe("POST /bookings - policy", () => {
     it("should return 400 when endsAt is missing", async () => {
         const response = await request(app)
             .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: "507f1f77bcf86cd799439011",
                 bookedBy: "test-user",
@@ -289,6 +334,7 @@ describe("POST /bookings - policy", () => {
     it("should return 400 when startsAt is not a valid date", async () => {
         const response = await request(app)
             .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: "507f1f77bcf86cd799439011",
                 bookedBy: "test-user",
@@ -305,6 +351,7 @@ describe("POST /bookings - policy", () => {
     it("should return 400 when endsAt is not a valid date", async () => {
         const response = await request(app)
             .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: "507f1f77bcf86cd799439011",
                 bookedBy: "test-user",
@@ -330,6 +377,7 @@ describe("POST /bookings - policy", () => {
 
         const response = await request(app)
             .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: resource.insertedId.toString(),
                 bookedBy: "test-user",
@@ -343,6 +391,7 @@ describe("POST /bookings - policy", () => {
     it("should return 400 when startsAt is after endsAt", async () => {
         const response = await request(app)
             .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: "507f1f77bcf86cd799439011",
                 bookedBy: "test-user",
@@ -359,6 +408,7 @@ describe("POST /bookings - policy", () => {
     it("should return 400 when startsAt equals endsAt", async () => {
         const response = await request(app)
             .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: "507f1f77bcf86cd799439011",
                 bookedBy: "test-user",
@@ -375,6 +425,7 @@ describe("POST /bookings - policy", () => {
     it("should return 400 when booking starts in the past", async () => {
         const response = await request(app)
             .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: "507f1f77bcf86cd799439011",
                 bookedBy: "test-user",

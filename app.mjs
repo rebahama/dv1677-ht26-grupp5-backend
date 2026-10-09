@@ -3,9 +3,9 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import resources from "./resources.mjs";
-import bookings from "./bookings.mjs";
-import { validateBooking } from "./domain/policy.mjs";
-import { getAvailableTimes } from "./domain/availability.mjs";
+import bookings from "./models/bookings.mjs";
+import authRouter from "./route/auth.mjs";
+import bookingsRouter from "./route/booking.mjs";
 
 const app = express();
 
@@ -16,6 +16,11 @@ app.use(cors());
 if (process.env.NODE_ENV !== "test") {
   app.use(morgan("combined"));
 }
+
+
+// --- auth ---
+
+app.use("/api/auth", authRouter);
 
 // --- Resurser ---
 
@@ -59,48 +64,7 @@ app.post("/resources/:id", async (req, res) => {
 });
 
 // --- Bokningar ---
+app.use("/bookings", bookingsRouter);
 
-app.get("/bookings/availability", async (req, res) => {
-  const { resourceId, dayStart, dayEnd } = req.query;
-
-  const resourceBookings = await bookings.getByResource(resourceId);
-
-  const availableTimes = getAvailableTimes(
-    resourceBookings,
-    dayStart,
-    dayEnd
-  );
-
-  return res.json({
-    availableTimes,
-  });
-});
-
-app.post("/bookings", async (req, res) => {
-  const validation = validateBooking(req.body);
-
-  if (!validation.valid) {
-    return res.status(400).json({
-      error: validation.error,
-    });
-  }
-  const { resourceId, startsAt, endsAt } = req.body;
-
-  const overlap = await bookings.hasOverlap(resourceId, startsAt, endsAt);
-
-  if (overlap) {
-    return res.status(409).json({
-      error: "Resource is already booked for this time",
-    });
-  }
-
-  const created = await bookings.addOne(req.body);
-  return res.status(201).json(created);
-});
-
-app.delete("/bookings/:id", async (req, res) => {
-  const result = await bookings.deleteOne(req.params.id);
-  return res.json(result);
-});
 
 export default app;
