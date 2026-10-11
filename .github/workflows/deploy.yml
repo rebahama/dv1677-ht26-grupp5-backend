@@ -1,9 +1,27 @@
 name: Deploy
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm ci
+
+      - name: Run tests
+        run: npm test -- --run
+        env:
+          NODE_ENV: test
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -43,5 +61,7 @@ jobs:
             cd ~/dv1677-ht26-grupp5-backend
             echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" > .env
             echo "PORT=3000" >> .env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+            chmod 600 .env
             docker compose pull
             docker compose up -d
