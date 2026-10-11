@@ -29,6 +29,13 @@ async function getAuthToken() {
     return loginResponse.body.token;
 }
 
+function futureDate(daysFromNow, hour) {
+    const date = new Date();
+    date.setUTCDate(date.getUTCDate() + daysFromNow);
+    date.setUTCHours(hour, 0, 0, 0);
+    return date.toISOString();
+}
+
 describe("GET /", () => {
     it("should return status 200", async () => {
         const response = await request(app).get("/");
@@ -121,8 +128,6 @@ describe("PUT /resource:id", () => {
     });
 })
 
-/* TO FIX: MAKE THE TESTING DATES DYNAMIC
-
 describe("POST /bookings - overlap", () => {
     it("should return 409 when bookings overlap", async () => {
         const token = await getAuthToken();
@@ -144,8 +149,8 @@ describe("POST /bookings - overlap", () => {
             .send({
                 resourceId: resourceId,
                 bookedBy: "test-user",
-                startsAt: "2026-10-10T10:00:00Z",
-                endsAt: "2026-10-10T12:00:00Z",
+                startsAt: futureDate(7, 10),
+                endsAt: futureDate(7, 12),
             });
 
         expect(firstBooking.status).toBe(201);
@@ -156,8 +161,8 @@ describe("POST /bookings - overlap", () => {
             .send({
                 resourceId: resourceId,
                 bookedBy: "second-user",
-                startsAt: "2026-10-10T11:00:00Z",
-                endsAt: "2026-10-10T13:00:00Z",
+                startsAt: futureDate(7, 11),
+                endsAt: futureDate(7, 13),
             });
 
         expect(overlappingBooking.status).toBe(409);
@@ -185,8 +190,8 @@ describe("POST /bookings - overlap", () => {
             .send({
                 resourceId: resourceId,
                 bookedBy: "test-user",
-                startsAt: "2026-10-11T10:00:00Z",
-                endsAt: "2026-10-11T12:00:00Z",
+                startsAt: futureDate(8, 10),
+                endsAt: futureDate(8, 12),
             });
 
         expect(firstBooking.status).toBe(201);
@@ -197,8 +202,8 @@ describe("POST /bookings - overlap", () => {
             .send({
                 resourceId: resourceId,
                 bookedBy: "second-user",
-                startsAt: "2026-10-11T12:00:00Z",
-                endsAt: "2026-10-11T14:00:00Z",
+                startsAt: futureDate(8, 12),
+                endsAt: futureDate(8, 14),
             });
 
         expect(secondBooking.status).toBe(201);
@@ -225,8 +230,8 @@ describe("GET /bookings/availability", () => {
             .send({
                 resourceId: resourceId,
                 bookedBy: "test-user",
-                startsAt: "2026-10-12T10:00:00Z",
-                endsAt: "2026-10-12T12:00:00Z",
+                startsAt: futureDate(9, 10),
+                endsAt: futureDate(9, 12),
             });
 
         expect(booking.status).toBe(201);
@@ -236,20 +241,20 @@ describe("GET /bookings/availability", () => {
             .set("Authorization", `Bearer ${token}`)
             .query({
                 resourceId: resourceId,
-                dayStart: "2026-10-12T08:00:00Z",
-                dayEnd: "2026-10-12T18:00:00Z",
+                dayStart: futureDate(9, 8),
+                dayEnd: futureDate(9, 18),
             });
 
         expect(response.status).toBe(200);
 
         expect(response.body.availableTimes).toEqual([
             {
-                startsAt: "2026-10-12T08:00:00.000Z",
-                endsAt: "2026-10-12T10:00:00.000Z",
+                startsAt: futureDate(9, 8),
+                endsAt: futureDate(9, 10),
             },
             {
-                startsAt: "2026-10-12T12:00:00.000Z",
-                endsAt: "2026-10-12T18:00:00.000Z",
+                startsAt: futureDate(9, 12),
+                endsAt: futureDate(9, 18),
             },
         ]);
     });
@@ -383,8 +388,8 @@ describe("POST /bookings - policy", () => {
             .send({
                 resourceId: resource.insertedId.toString(),
                 bookedBy: "test-user",
-                startsAt: "2026-10-15T10:00:00Z",
-                endsAt: "2026-10-15T12:00:00Z",
+                startsAt: futureDate(10, 10),
+                endsAt: futureDate(10, 12),
             });
 
         expect(response.status).toBe(201);
@@ -569,4 +574,3 @@ describe("getAvailableTimes", () => {
         ]);
     });
 });
-*/
