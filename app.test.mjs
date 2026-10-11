@@ -128,8 +128,6 @@ describe("PUT /resource:id", () => {
     });
 })
 
-/* TO FIX: MAKE THE TESTING DATES DYNAMIC
-
 describe("POST /bookings - overlap", () => {
     it("should return 409 when bookings overlap", async () => {
         const token = await getAuthToken();
@@ -576,4 +574,3 @@ describe("getAvailableTimes", () => {
         ]);
     });
 });
-*/
