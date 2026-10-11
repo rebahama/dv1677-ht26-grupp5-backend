@@ -19,7 +19,9 @@ jobs:
 
       - run: npm ci
       - run: npm test -- --run
-
+        env:
+          NODE_ENV: test
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
   #
   # Lägg även till `needs: test` i deploy.yml så att deploy
   # bara sker om testerna går igenom.
