@@ -107,6 +107,26 @@ const bookings = {
     });
   },
 
+  updateEndTime: async function updateEndTime(id, user, endsAt) {
+    if (!ObjectId.isValid(id) || !ObjectId.isValid(user.id)) {
+      return { changes: 0 };
+    }
+
+    const result = await db.collection("bookings").updateOne(
+      {
+        _id: new ObjectId(id),
+        user: new ObjectId(user.id),
+      },
+      {
+        $set: {
+          endsAt: new Date(endsAt).toISOString(),
+        },
+      }
+    );
+
+    return { changes: result.modifiedCount };
+  },
+
 
 };
 

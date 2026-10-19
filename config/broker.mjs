@@ -71,7 +71,6 @@ async function post(path, payload, extraHeaders = {}) {
   return data;
 }
 
-
 export const broker = {
   inventory: (type) => call(`/${type}/inventory`),
 
@@ -95,7 +94,7 @@ export const broker = {
     return call(`/${type}/allocations`);
   },
 
-    withdraw: (type, id, secret) => {
+  withdraw: (type, id, secret) => {
     const allowedTypes = ["proxmox", "maas", "openstack"];
 
     if (!allowedTypes.includes(type)) {
@@ -108,4 +107,6 @@ export const broker = {
       { "X-Booker-Allocation-Secret": secret }
     );
   },
+
+
 };

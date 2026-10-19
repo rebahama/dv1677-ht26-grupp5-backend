@@ -1,5 +1,21 @@
-import { describe, it, expect,beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import request from "supertest";
+vi.mock("./config/broker.mjs", async (importOriginal) => {
+    const actual = await importOriginal();
+
+    return {
+        ...actual,
+        broker: {
+            ...actual.broker,
+            allocate: vi.fn().mockResolvedValue({
+                allocation: {
+                    id: "test-allocation-id",
+                    secret: "test-allocation-secret",
+                },
+            }),
+        },
+    };
+});
 import app from "./app.mjs";
 import db from "./db/database.mjs";
 import { getAvailableTimes } from "./domain/availability.mjs";
@@ -142,6 +158,12 @@ describe("POST /bookings - overlap", () => {
         const resource = await db.collection("resources").insertOne({
             name: "Booking Test Resource",
             type: "vm",
+            want: {
+                vcpus: 1,
+                ramMb: 1024,
+                diskGb: 10,
+            },
+            provider: "proxmox",
             description: "Resource for overlap test",
             capacity: 1,
             active: true,
@@ -156,10 +178,16 @@ describe("POST /bookings - overlap", () => {
             .send({
                 resourceId: resourceId,
                 bookedBy: "test-user",
+                want: {
+                    vcpus: 1,
+                    ramMb: 1024,
+                    diskGb: 10,
+                },
                 startsAt: futureDate(7, 10),
                 endsAt: futureDate(7, 12),
             });
-
+        console.log("Status:", firstBooking.status);
+        console.log("Response:", firstBooking.body);
         expect(firstBooking.status).toBe(201);
 
         const overlappingBooking = await request(app)
@@ -168,6 +196,11 @@ describe("POST /bookings - overlap", () => {
             .send({
                 resourceId: resourceId,
                 bookedBy: "second-user",
+                want: {
+                    vcpus: 1,
+                    ramMb: 1024,
+                    diskGb: 10,
+                },
                 startsAt: futureDate(7, 11),
                 endsAt: futureDate(7, 13),
             });
@@ -183,6 +216,12 @@ describe("POST /bookings - overlap", () => {
         const resource = await db.collection("resources").insertOne({
             name: "Adjacent Booking Resource",
             type: "vm",
+            provider: "proxmox",
+            want: {
+                vcpus: 1,
+                ramMb: 1024,
+                diskGb: 10,
+            },
             description: "Resource for adjacent booking test",
             capacity: 1,
             active: true,
@@ -197,6 +236,11 @@ describe("POST /bookings - overlap", () => {
             .send({
                 resourceId: resourceId,
                 bookedBy: "test-user",
+                want: {
+                    vcpus: 1,
+                    ramMb: 1024,
+                    diskGb: 10,
+                },
                 startsAt: futureDate(8, 10),
                 endsAt: futureDate(8, 12),
             });
@@ -209,6 +253,11 @@ describe("POST /bookings - overlap", () => {
             .send({
                 resourceId: resourceId,
                 bookedBy: "second-user",
+                want: {
+                    vcpus: 1,
+                    ramMb: 1024,
+                    diskGb: 10,
+                },
                 startsAt: futureDate(8, 12),
                 endsAt: futureDate(8, 14),
             });
@@ -223,6 +272,12 @@ describe("GET /bookings/availability", () => {
         const resource = await db.collection("resources").insertOne({
             name: "Availability Test Resource",
             type: "vm",
+            provider: "proxmox",
+            want: {
+                vcpus: 1,
+                ramMb: 1024,
+                diskGb: 10,
+            },
             description: "Resource for availability test",
             capacity: 1,
             active: true,
@@ -237,6 +292,11 @@ describe("GET /bookings/availability", () => {
             .send({
                 resourceId: resourceId,
                 bookedBy: "test-user",
+                want: {
+                    vcpus: 1,
+                    ramMb: 1024,
+                    diskGb: 10,
+                },
                 startsAt: futureDate(9, 10),
                 endsAt: futureDate(9, 12),
             });
@@ -278,6 +338,11 @@ describe("POST /bookings - policy", () => {
             .set("Authorization", `Bearer ${token}`)
             .send({
                 bookedBy: "test-user",
+                want: {
+                    vcpus: 1,
+                    ramMb: 1024,
+                    diskGb: 10,
+                },
                 startsAt: "2026-10-14T10:00:00Z",
                 endsAt: "2026-10-14T12:00:00Z",
             });
@@ -292,6 +357,11 @@ describe("POST /bookings - policy", () => {
             .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: "507f1f77bcf86cd799439011",
+                want: {
+                    vcpus: 1,
+                    ramMb: 1024,
+                    diskGb: 10,
+                },
                 startsAt: "2026-10-15T10:00:00Z",
                 endsAt: "2026-10-15T12:00:00Z",
             });
@@ -307,6 +377,11 @@ describe("POST /bookings - policy", () => {
             .send({
                 resourceId: "abc",
                 bookedBy: "test-user",
+                want: {
+                    vcpus: 1,
+                    ramMb: 1024,
+                    diskGb: 10,
+                },
                 startsAt: "2026-10-15T10:00:00Z",
                 endsAt: "2026-10-15T12:00:00Z",
             });
@@ -323,6 +398,11 @@ describe("POST /bookings - policy", () => {
             .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: "507f1f77bcf86cd799439011",
+                want: {
+                    vcpus: 1,
+                    ramMb: 1024,
+                    diskGb: 10,
+                },
                 bookedBy: "test-user",
                 endsAt: "2026-10-15T12:00:00Z",
             });
@@ -337,6 +417,11 @@ describe("POST /bookings - policy", () => {
             .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: "507f1f77bcf86cd799439011",
+                want: {
+                    vcpus: 1,
+                    ramMb: 1024,
+                    diskGb: 10,
+                },
                 bookedBy: "test-user",
                 startsAt: "2026-10-15T10:00:00Z",
             });
@@ -352,6 +437,11 @@ describe("POST /bookings - policy", () => {
             .send({
                 resourceId: "507f1f77bcf86cd799439011",
                 bookedBy: "test-user",
+                want: {
+                    vcpus: 1,
+                    ramMb: 1024,
+                    diskGb: 10,
+                },
                 startsAt: "not-a-date",
                 endsAt: "2026-10-15T12:00:00Z",
             });
@@ -368,6 +458,11 @@ describe("POST /bookings - policy", () => {
             .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: "507f1f77bcf86cd799439011",
+                want: {
+                    vcpus: 1,
+                    ramMb: 1024,
+                    diskGb: 10,
+                },
                 bookedBy: "test-user",
                 startsAt: "2026-10-15T10:00:00Z",
                 endsAt: "not-a-date",
@@ -383,6 +478,12 @@ describe("POST /bookings - policy", () => {
         const resource = await db.collection("resources").insertOne({
             name: "Policy Test Resource",
             type: "vm",
+            provider: "proxmox",
+            want: {
+                vcpus: 1,
+                ramMb: 1024,
+                diskGb: 10,
+            },
             description: "Resource for valid policy test",
             capacity: 1,
             active: true,
@@ -394,6 +495,11 @@ describe("POST /bookings - policy", () => {
             .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: resource.insertedId.toString(),
+                want: {
+                    vcpus: 1,
+                    ramMb: 1024,
+                    diskGb: 10,
+                },
                 bookedBy: "test-user",
                 startsAt: futureDate(10, 10),
                 endsAt: futureDate(10, 12),
@@ -408,6 +514,11 @@ describe("POST /bookings - policy", () => {
             .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: "507f1f77bcf86cd799439011",
+                want: {
+                    vcpus: 1,
+                    ramMb: 1024,
+                    diskGb: 10,
+                },
                 bookedBy: "test-user",
                 startsAt: "2026-10-14T15:00:00Z",
                 endsAt: "2026-10-14T12:00:00Z",
@@ -425,6 +536,11 @@ describe("POST /bookings - policy", () => {
             .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: "507f1f77bcf86cd799439011",
+                want: {
+                    vcpus: 1,
+                    ramMb: 1024,
+                    diskGb: 10,
+                },
                 bookedBy: "test-user",
                 startsAt: "2026-10-14T12:00:00Z",
                 endsAt: "2026-10-14T12:00:00Z",
@@ -442,11 +558,16 @@ describe("POST /bookings - policy", () => {
             .set("Authorization", `Bearer ${token}`)
             .send({
                 resourceId: "507f1f77bcf86cd799439011",
+                want: {
+                    vcpus: 1,
+                    ramMb: 1024,
+                    diskGb: 10,
+                },
                 bookedBy: "test-user",
                 startsAt: "2020-01-01T10:00:00Z",
                 endsAt: "2020-01-01T12:00:00Z",
             });
-    
+
         expect(response.status).toBe(400);
         expect(response.body.error).toBe(
             "Cannot book a time in the past"

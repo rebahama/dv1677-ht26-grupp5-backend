@@ -133,7 +133,7 @@ router.delete("/:id", requireAuth, async (req, res) => {
       const resource = await db.collection("resources").findOne({
         _id: booking.resourceId,
       });
-
+      console.log("Resource found:", resource);
       if (!resource) {
         return res.status(404).json({
           error: "Resource not found",
@@ -179,21 +179,21 @@ router.delete("/:id", requireAuth, async (req, res) => {
 });
 
 router.get("/availability", requireAuth, async (req, res) => {
-    const { resourceId, dayStart, dayEnd } = req.query;
+  const { resourceId, dayStart, dayEnd } = req.query;
 
-    const resourceBookings = await bookings.getAllByResource(
-        resourceId
-    );
+  const resourceBookings = await bookings.getAllByResource(
+    resourceId
+  );
 
-    const availableTimes = getAvailableTimes(
-        resourceBookings,
-        dayStart,
-        dayEnd
-    );
+  const availableTimes = getAvailableTimes(
+    resourceBookings,
+    dayStart,
+    dayEnd
+  );
 
-    return res.json({
-        availableTimes,
-    });
+  return res.json({
+    availableTimes,
+  });
 });
 
 router.get("/", requireAuth, async (req, res) => {
@@ -207,6 +207,79 @@ router.get("/", requireAuth, async (req, res) => {
   }));
 
   return res.json(safeBookings);
+});
+
+
+router.put("/:id/end-time", requireAuth, async (req, res) => {
+  try {
+    const { endsAt } = req.body;
+
+    const newEndTime = new Date(endsAt);
+
+    if (!endsAt || Number.isNaN(newEndTime.getTime())) {
+      return res.status(400).json({
+        error: "A valid endsAt date is required",
+      });
+    }
+
+    const booking = await bookings.getByIdForUser(
+      req.params.id,
+      req.user
+    );
+
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    if (!booking.broker?.allocationId || !booking.broker?.secret) {
+      return res.status(400).json({
+        error: "Booking has no broker allocation",
+      });
+    }
+
+    const resource = await db.collection("resources").findOne({
+      _id: booking.resourceId,
+    });
+
+    if (!resource) {
+      return res.status(404).json({ error: "Resource not found" });
+    }
+
+    const result = await broker.extend(
+      resource.provider,
+      booking.broker.allocationId,
+      booking.broker.secret,
+      newEndTime.toISOString()
+    );
+
+    const updated = await bookings.updateEndTime(
+      req.params.id,
+      req.user,
+      newEndTime.toISOString()
+    );
+
+    if (updated.changes !== 1 && booking.endsAt.getTime() !== newEndTime.getTime()) {
+      return res.status(500).json({
+        error: "Broker updated, but the local booking could not be updated",
+      });
+    }
+
+    return res.json({
+      message: "Booking end time updated",
+      endsAt: newEndTime.toISOString(),
+      allocation: result.allocation,
+    });
+  } catch (error) {
+    if (error instanceof BrokerError) {
+      return res.status(503).json({
+        error: "Could not update broker allocation",
+        code: error.code,
+      });
+    }
+
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 export default router;
