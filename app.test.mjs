@@ -46,8 +46,10 @@ describe("GET /", () => {
 
 describe("POST /resources", () => {
     it("should create a resource", async () => {
+        const token = await getAuthToken();
         const response = await request(app)
             .post("/resources")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 name: "Test Resource",
                 type: "ubuntu-test",
@@ -65,6 +67,7 @@ describe("POST /resources", () => {
 
 describe("DELETE /resources:id", () => {
     it("should delete a resource", async () => {
+        const token = await getAuthToken();
         const result = await db.collection("resources").insertOne({
             name: "Delete resources",
             type: "Delete type",
@@ -77,7 +80,8 @@ describe("DELETE /resources:id", () => {
         const resourceId = result.insertedId.toString();
 
         const response = await request(app)
-            .delete(`/resources/${resourceId}`);
+            .delete(`/resources/${resourceId}`)
+            .set("Authorization", `Bearer ${token}`);
 
         const deletedResource = await db
             .collection("resources")
@@ -95,6 +99,7 @@ describe("DELETE /resources:id", () => {
 
 describe("PUT /resource:id", () => {
     it("should update a resource", async () => {
+        const token = await getAuthToken();
         const result = await db.collection("resources").insertOne({
             name: "First resources",
             type: "First type",
@@ -107,7 +112,9 @@ describe("PUT /resource:id", () => {
         const resourceId = result.insertedId.toString();
 
         const response = await request(app)
-            .put(`/resources/${resourceId}`).send({
+            .put(`/resources/${resourceId}`)
+            .set("Authorization", `Bearer ${token}`)
+            .send({
                 name: "Updated Resource",
                 type: "updated",
                 description: "Updated description",
