@@ -12,7 +12,9 @@ const bookings = {
       .find({
         resourceId: new ObjectId(resourceId),
         user: new ObjectId(user.id),
-      })
+      },
+      { projection: { "broker.secret": 0 } }
+      )
       .sort({ startsAt: 1 })
       .toArray();
   },
@@ -27,7 +29,9 @@ const bookings = {
       .find({
         resourceId: new ObjectId(resourceId),
         status: "confirmed",
-      })
+      },
+      { projection: { "broker.secret": 0 } }
+      )
       .sort({ startsAt: 1 })
       .toArray();
   },
@@ -91,7 +95,9 @@ const bookings = {
       .collection("bookings")
       .find({
         user: new ObjectId(user.id),
-      })
+      },
+      { projection: { "broker.secret": 0 } }
+      )
       .sort({ startsAt: 1 })
       .toArray();
   },

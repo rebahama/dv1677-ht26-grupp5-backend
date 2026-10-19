@@ -38,16 +38,18 @@ router.post("/", requireAuth, async (req, res) => {
       });
     }
 
-    const overlap = await bookings.hasOverlap(
-      resourceId,
-      startsAt,
-      endsAt
-    );
+    if (resource.provider === "maas") {
+      const overlap = await bookings.hasOverlap(
+        resourceId,
+        startsAt,
+        endsAt
+      );
 
-    if (overlap) {
-      return res.status(409).json({
-        error: "Resource is already booked for this time",
-      });
+      if (overlap) {
+        return res.status(409).json({
+          error: "Resource is already booked for this time",
+        });
+      }
     }
 
     const user = String(req.user.id);

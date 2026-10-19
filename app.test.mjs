@@ -205,6 +205,47 @@ describe("POST /bookings - overlap", () => {
                 endsAt: futureDate(7, 13),
             });
 
+        expect(overlappingBooking.status).toBe(201);
+    });
+
+    it("should return 409 when MAAS bookings overlap", async () => {
+        const token = await getAuthToken();
+
+        const resource = await db.collection("resources").insertOne({
+            name: "MAAS Booking Test Resource",
+            type: "server",
+            provider: "maas",
+            externalId: "test-system-id",
+            description: "Resource for MAAS overlap test",
+            capacity: 1,
+            active: true,
+            createdAt: new Date(),
+        });
+
+        const resourceId = resource.insertedId.toString();
+
+        const firstBooking = await request(app)
+            .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
+            .send({
+                resourceId,
+                bookedBy: "test-user",
+                startsAt: futureDate(7, 10),
+                endsAt: futureDate(7, 12),
+            });
+
+        expect(firstBooking.status).toBe(201);
+
+        const overlappingBooking = await request(app)
+            .post("/bookings")
+            .set("Authorization", `Bearer ${token}`)
+            .send({
+                resourceId,
+                bookedBy: "second-user",
+                startsAt: futureDate(7, 11),
+                endsAt: futureDate(7, 13),
+            });
+
         expect(overlappingBooking.status).toBe(409);
         expect(overlappingBooking.body.error).toBe(
             "Resource is already booked for this time"
