@@ -38,7 +38,9 @@ React kommer att användas eftersom att det finns en stor community och väldigt
 | --------------------------------- | -------------------------------- |
 | MONGODB_URI = Din Mongodb databas | Anslutningssträng till MongoDB   |
 | PORT=3000                         | Anslutningssträng till npm start |
-| JWT_SECRET= Din hemliga kod       | En hemlig kod för att verifiera autentisering |
+| JWT_SECRET = Din hemliga kod      | En hemlig kod för att verifiera autentisering |
+| BROKER_API_URL = Din broker url   | URL för att kontakta broker      |
+| BROKER_GROUP_TOKEN = Hemlig token | Hemlig token kod som broker distribuerar |
 
 ## Tester
 
