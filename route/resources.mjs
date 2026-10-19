@@ -5,6 +5,38 @@ import bookings from "../models/bookings.mjs";
 
 const router = express.Router();
 
+router.get("/broker", async (req, res) => {
+  try {
+    const allResources = await resources.syncAll();
+
+    return res.status(200).json(allResources);
+  } catch (error) {
+    console.error("Resource sync failed:", error.message);
+
+    return res.status(502).json({
+      error: "Could not fetch resources from broker",
+      code: error.code || "RESOURCE_SYNC_FAILED",
+    });
+  }
+});
+
+router.get("/broker/list", async (req, res) => {
+  try {
+    const allResources = await resources.getAll();
+    const brokerResources = allResources.filter(
+      (resource) => resource.provider
+    );
+
+    return res.status(200).json(brokerResources);
+  } catch (error) {
+    console.error("Could not fetch broker resources:", error.message);
+
+    return res.status(500).json({
+      error: "Could not fetch broker resources",
+    });
+  }
+});
+
 router.get("/", async (req, res) => {
   return res.json(await resources.getAll());
 });

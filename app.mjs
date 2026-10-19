@@ -23,6 +23,8 @@ app.get("/", async (req, res) => {
     name: "Booking api",
     resources: "/resources",
     bookings: "/bookings",
+    syncresources: "/resources/broker",
+    displaybrokerlist: "/resources/broker/list",
   });
 });
 
