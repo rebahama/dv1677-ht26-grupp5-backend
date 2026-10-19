@@ -19,6 +19,8 @@ jobs:
         env:
           NODE_ENV: test
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          BROKER_API_URL: ${{ secrets.BROKER_API_URL }}
+          BROKER_GROUP_TOKEN: ${{ secrets.BROKER_GROUP_TOKEN }}
 
   deploy:
     needs: test
@@ -62,6 +64,8 @@ jobs:
             echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" > .env
             echo "PORT=3000" >> .env
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+            echo "BROKER_API_URL=${{ secrets.BROKER_API_URL }}" >> .env
+            echo "BROKER_GROUP_TOKEN=${{ secrets.BROKER_GROUP_TOKEN }}" >> .env
             chmod 600 .env
             docker compose pull
             docker compose up -d

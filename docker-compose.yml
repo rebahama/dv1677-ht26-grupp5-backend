@@ -11,6 +11,8 @@ services:
       - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017}
       - DATABASE_NAME=proxmox_booking
       - JWT_SECRET=${JWT_SECRET}
+      - BROKER_API_URL=${BROKER_API_URL}
+      - BROKER_GROUP_TOKEN=${BROKER_GROUP_TOKEN}
     depends_on:
       - mongodb
     restart: always
