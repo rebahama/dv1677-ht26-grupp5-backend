@@ -15,6 +15,7 @@ Vi båda två har erfarenhet av liknande projekt och kände att detta var mest p
 
 ## Datamodellering
 Följande datamodellering har används för tillfället för projektet:
+
 ![Database diagram](./docs/datamod.png)
 
 ## Teknikval
@@ -37,7 +38,9 @@ React kommer att användas eftersom att det finns en stor community och väldigt
 | --------------------------------- | -------------------------------- |
 | MONGODB_URI = Din Mongodb databas | Anslutningssträng till MongoDB   |
 | PORT=3000                         | Anslutningssträng till npm start |
-| JWT_SECRET= Din hemliga kod       | En hemlig kod för att verifiera autentisering |
+| JWT_SECRET = Din hemliga kod      | En hemlig kod för att verifiera autentisering |
+| BROKER_API_URL = Din broker url   | URL för att kontakta broker      |
+| BROKER_GROUP_TOKEN = Hemlig token | Hemlig token kod som broker distribuerar |
 
 ## Tester
 
@@ -77,3 +80,5 @@ Dokumentera löpande vad ni gjort och hur ni löst problem.
 - Vecka 5: Allting kontrollerades för att säkerhetsställa att backenden fungerar och returnerar routesen för uppgiften. Även databasen kontrollerades så att inte data hamnar i produktionsdatabasen utan i test databasen.
 
 - Vecka 6: JWT installerades och initierades för att användas för inloggningen och för att skydda olika relevanta routes, curl -i x användes i terminalen för bash genom att kontrollera att rätt användare har behörighet att utföra rätt uppgifter. Exempelvis måste man vara inloggad för att kunna göra en bokning eller radera. Även app.mjs refactoredes om så att den anropar booknings routen, en route folder skapades där crud operationer utfördes för bookningar som sedan i sin tur importerar i från en models folder som skapades till att utföra databas inställningar.
+
+- Vecka 8: Brooker anropas med hjälp av BROKER_API_URL och BROKER_GROUP_TOKEN via VPS, när vi fick tillbaka svar från broker så kunde en get användas för att displaya alla resurser som finns, sedan skapades en sync resurs för att lägga in data ifrån broker till våran mongodb databas. När detta var klart så kunde vi börja använda oss av crud för att lägga in bokningar. Även condition check för MAAS implementerades och även boknings secret döljs ifrån dom olika endpointsen.

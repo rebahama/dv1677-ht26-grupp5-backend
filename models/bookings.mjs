@@ -12,31 +12,35 @@ const bookings = {
       .find({
         resourceId: new ObjectId(resourceId),
         user: new ObjectId(user.id),
-      })
+      },
+      { projection: { "broker.secret": 0 } }
+      )
       .sort({ startsAt: 1 })
       .toArray();
   },
 
   getAllByResource: async function getAllByResource(resourceId) {
     if (!ObjectId.isValid(resourceId)) {
-        return [];
+      return [];
     }
 
     return await db
-        .collection("bookings")
-        .find({
-            resourceId: new ObjectId(resourceId),
-            status: "confirmed",
-        })
-        .sort({ startsAt: 1 })
-        .toArray();
+      .collection("bookings")
+      .find({
+        resourceId: new ObjectId(resourceId),
+        status: "confirmed",
+      },
+      { projection: { "broker.secret": 0 } }
+      )
+      .sort({ startsAt: 1 })
+      .toArray();
   },
 
   hasOverlap: async function hasOverlap(resourceId, startsAt, endsAt) {
     if (!ObjectId.isValid(resourceId)) {
       return false;
     }
-  
+
     const existingBookings = await db
       .collection("bookings")
       .find({
@@ -44,13 +48,13 @@ const bookings = {
         status: "confirmed",
       })
       .toArray();
-  
+
     return existingBookings.some((booking) =>
       bookingsOverlap(startsAt, endsAt, booking.startsAt, booking.endsAt)
     );
   },
 
-  addOne: async function addOne(body, user) {
+  addOne: async function addOne(body, user, allocation) {
     const newBooking = {
       resourceId: new ObjectId(body.resourceId),
       user: new ObjectId(user.id),
@@ -59,6 +63,12 @@ const bookings = {
       endsAt: body.endsAt,
       status: "confirmed",
       createdAt: new Date(),
+
+      broker: {
+        allocationId: allocation.id,
+        secret: allocation.secret,
+      },
+
     };
 
     const result = await db.collection("bookings").insertOne(newBooking);
@@ -85,10 +95,45 @@ const bookings = {
       .collection("bookings")
       .find({
         user: new ObjectId(user.id),
-      })
+      },
+      { projection: { "broker.secret": 0 } }
+      )
       .sort({ startsAt: 1 })
       .toArray();
   },
+
+  getByIdForUser: async function getByIdForUser(id, user) {
+    if (!ObjectId.isValid(id) || !ObjectId.isValid(user.id)) {
+      return null;
+    }
+
+    return await db.collection("bookings").findOne({
+      _id: new ObjectId(id),
+      user: new ObjectId(user.id),
+    });
+  },
+
+  updateEndTime: async function updateEndTime(id, user, endsAt) {
+    if (!ObjectId.isValid(id) || !ObjectId.isValid(user.id)) {
+      return { changes: 0 };
+    }
+
+    const result = await db.collection("bookings").updateOne(
+      {
+        _id: new ObjectId(id),
+        user: new ObjectId(user.id),
+      },
+      {
+        $set: {
+          endsAt: new Date(endsAt).toISOString(),
+        },
+      }
+    );
+
+    return { changes: result.modifiedCount };
+  },
+
+
 };
 
 export default bookings;
