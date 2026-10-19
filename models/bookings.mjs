@@ -50,7 +50,7 @@ const bookings = {
     );
   },
 
-  addOne: async function addOne(body, user) {
+  addOne: async function addOne(body, user, allocation) {
     const newBooking = {
       resourceId: new ObjectId(body.resourceId),
       user: new ObjectId(user.id),
@@ -59,6 +59,12 @@ const bookings = {
       endsAt: body.endsAt,
       status: "confirmed",
       createdAt: new Date(),
+
+      broker: {
+      allocationId: allocation.id,
+      secret: allocation.secret,
+    },
+
     };
 
     const result = await db.collection("bookings").insertOne(newBooking);
