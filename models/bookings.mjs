@@ -19,24 +19,24 @@ const bookings = {
 
   getAllByResource: async function getAllByResource(resourceId) {
     if (!ObjectId.isValid(resourceId)) {
-        return [];
+      return [];
     }
 
     return await db
-        .collection("bookings")
-        .find({
-            resourceId: new ObjectId(resourceId),
-            status: "confirmed",
-        })
-        .sort({ startsAt: 1 })
-        .toArray();
+      .collection("bookings")
+      .find({
+        resourceId: new ObjectId(resourceId),
+        status: "confirmed",
+      })
+      .sort({ startsAt: 1 })
+      .toArray();
   },
 
   hasOverlap: async function hasOverlap(resourceId, startsAt, endsAt) {
     if (!ObjectId.isValid(resourceId)) {
       return false;
     }
-  
+
     const existingBookings = await db
       .collection("bookings")
       .find({
@@ -44,7 +44,7 @@ const bookings = {
         status: "confirmed",
       })
       .toArray();
-  
+
     return existingBookings.some((booking) =>
       bookingsOverlap(startsAt, endsAt, booking.startsAt, booking.endsAt)
     );
@@ -61,9 +61,9 @@ const bookings = {
       createdAt: new Date(),
 
       broker: {
-      allocationId: allocation.id,
-      secret: allocation.secret,
-    },
+        allocationId: allocation.id,
+        secret: allocation.secret,
+      },
 
     };
 
@@ -95,6 +95,19 @@ const bookings = {
       .sort({ startsAt: 1 })
       .toArray();
   },
+
+  getByIdForUser: async function getByIdForUser(id, user) {
+    if (!ObjectId.isValid(id) || !ObjectId.isValid(user.id)) {
+      return null;
+    }
+
+    return await db.collection("bookings").findOne({
+      _id: new ObjectId(id),
+      user: new ObjectId(user.id),
+    });
+  },
+
+
 };
 
 export default bookings;

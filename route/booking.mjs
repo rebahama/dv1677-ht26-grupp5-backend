@@ -117,9 +117,65 @@ router.post("/", requireAuth, async (req, res) => {
 });
 
 router.delete("/:id", requireAuth, async (req, res) => {
-    const result = await bookings.deleteOne(req.params.id, req.user);
+  try {
+    const booking = await bookings.getByIdForUser(
+      req.params.id,
+      req.user
+    );
 
-    return res.json(result);
+    if (!booking) {
+      return res.status(404).json({
+        error: "Booking not found",
+      });
+    }
+
+    if (booking.broker?.allocationId && booking.broker?.secret) {
+      const resource = await db.collection("resources").findOne({
+        _id: booking.resourceId,
+      });
+
+      if (!resource) {
+        return res.status(404).json({
+          error: "Resource not found",
+        });
+      }
+
+      const result = await broker.withdraw(
+        resource.provider,
+        booking.broker.allocationId,
+        booking.broker.secret
+      );
+
+      if (result.allocation?.status !== "released") {
+        return res.status(502).json({
+          error: "Broker did not confirm release",
+        });
+      }
+    }
+
+    const deleted = await bookings.deleteOne(
+      req.params.id,
+      req.user
+    );
+
+    return res.json({
+      changes: deleted.changes,
+      status: "cancelled",
+    });
+  } catch (err) {
+    if (err instanceof BrokerError) {
+      return res.status(503).json({
+        error: "Could not release broker",
+        code: err.code,
+      });
+    }
+
+    console.error(err);
+
+    return res.status(500).json({
+      error: "Could not cancel",
+    });
+  }
 });
 
 router.get("/availability", requireAuth, async (req, res) => {

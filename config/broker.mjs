@@ -39,14 +39,19 @@ async function call(path) {
   return data;
 }
 
-async function post(path, payload) {
+async function post(path, payload, extraHeaders = {}) {
   let response;
 
   try {
     response = await fetch(`${BASE}${path}`, {
       method: "POST",
-      headers,
-      body: JSON.stringify(payload),
+      headers: {
+        ...headers,
+        ...extraHeaders,
+      },
+      ...(payload === undefined
+        ? {}
+        : { body: JSON.stringify(payload) }),
       signal: AbortSignal.timeout(10000),
     });
   } catch (error) {
@@ -65,6 +70,7 @@ async function post(path, payload) {
 
   return data;
 }
+
 
 export const broker = {
   inventory: (type) => call(`/${type}/inventory`),
@@ -87,5 +93,19 @@ export const broker = {
     }
 
     return call(`/${type}/allocations`);
+  },
+
+    withdraw: (type, id, secret) => {
+    const allowedTypes = ["proxmox", "maas", "openstack"];
+
+    if (!allowedTypes.includes(type)) {
+      throw new Error("Unsupported broker type");
+    }
+
+    return post(
+      `/${type}/allocations/${encodeURIComponent(id)}/withdraw`,
+      undefined,
+      { "X-Booker-Allocation-Secret": secret }
+    );
   },
 };
