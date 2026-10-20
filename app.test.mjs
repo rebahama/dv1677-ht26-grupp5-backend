@@ -186,8 +186,6 @@ describe("POST /bookings - overlap", () => {
                 startsAt: futureDate(7, 10),
                 endsAt: futureDate(7, 12),
             });
-        console.log("Status:", firstBooking.status);
-        console.log("Response:", firstBooking.body);
         expect(firstBooking.status).toBe(201);
 
         const overlappingBooking = await request(app)
@@ -392,7 +390,7 @@ describe("POST /bookings - policy", () => {
         expect(response.body.error).toBe("resourceId is required");
     });
 
-    it("should return 400 when bookedBy is missing", async () => {
+    it("should allow a booking without bookedBy in the request, because bookedby is set by backend logged in user", async () => {
         const response = await request(app)
             .post("/bookings")
             .set("Authorization", `Bearer ${token}`)
@@ -403,12 +401,12 @@ describe("POST /bookings - policy", () => {
                     ramMb: 1024,
                     diskGb: 10,
                 },
-                startsAt: "2026-10-15T10:00:00Z",
-                endsAt: "2026-10-15T12:00:00Z",
+                startsAt: "2026-11-15T10:00:00Z",
+                endsAt: "2026-11-15T12:00:00Z",
             });
 
-        expect(response.status).toBe(400);
-        expect(response.body.error).toBe("bookedBy is required");
+
+        expect(response.status).not.toBe(400);
     });
 
     it("should return 400 when resourceId is invalid", async () => {

@@ -58,7 +58,7 @@ const bookings = {
     const newBooking = {
       resourceId: new ObjectId(body.resourceId),
       user: new ObjectId(user.id),
-      bookedBy: body.bookedBy,
+      bookedBy: new ObjectId(user.id),
       startsAt: body.startsAt,
       endsAt: body.endsAt,
       status: "confirmed",

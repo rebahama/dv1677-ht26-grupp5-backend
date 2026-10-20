@@ -15,12 +15,6 @@ export function validateBooking(booking) {
         };
     }
 
-    if (!booking.bookedBy) {
-      return {
-        valid: false,
-        error: "bookedBy is required",
-      };
-    }
   
     if (!booking.startsAt) {
       return {
