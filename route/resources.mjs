@@ -46,11 +46,24 @@ router.post("/", requireAuth, async (req, res) => {
   return res.status(201).json(created);
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", requireAuth, async (req, res) => {
   const resource = await resources.getOne(req.params.id);
-  const resourceBookings = await bookings.getByResource(req.params.id);
 
-  return res.json({ resource, bookings: resourceBookings });
+  if (!resource._id) {
+    return res.status(404).json({
+      error: "Resource not found",
+    });
+  }
+
+  const resourceBookings = await bookings.getByResource(
+    req.params.id,
+    req.user
+  );
+
+  return res.json({
+    resource,
+    bookings: resourceBookings,
+  });
 });
 
 router.delete("/:id", requireAuth, async (req, res) => {
