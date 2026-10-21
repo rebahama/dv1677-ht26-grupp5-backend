@@ -62,6 +62,7 @@ const bookings = {
       startsAt: body.startsAt,
       endsAt: body.endsAt,
       status: "confirmed",
+      want: body.want,
       createdAt: new Date(),
 
       broker: {

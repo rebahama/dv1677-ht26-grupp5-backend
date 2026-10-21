@@ -75,6 +75,7 @@ router.post("/", requireAuth, async (req, res) => {
       payload = {
         want,
         user,
+        startsAt: new Date(startsAt).toISOString(),
         endsAt: new Date(endsAt).toISOString(),
       };
     } else {
