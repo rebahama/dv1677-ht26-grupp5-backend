@@ -260,7 +260,8 @@ router.put("/:id/end-time", requireAuth, async (req, res) => {
       newEndTime.toISOString()
     );
 
-    if (updated.changes !== 1 && booking.endsAt.getTime() !== newEndTime.getTime()) {
+    if (updated.changes !== 1 &&
+      new Date(booking.endsAt).getTime() !== newEndTime.getTime()) {
       return res.status(500).json({
         error: "Broker updated, but the local booking could not be updated",
       });

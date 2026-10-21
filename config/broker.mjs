@@ -108,5 +108,19 @@ export const broker = {
     );
   },
 
+  extend: (type, id, secret, endsAt) => {
+    const allowedTypes = ["proxmox", "maas", "openstack"];
+
+    if (!allowedTypes.includes(type)) {
+        throw new Error("Unsupported broker type");
+    }
+
+    return post(
+        `/${type}/allocations/${encodeURIComponent(id)}/extend`,
+        { endsAt },
+        { "X-Booker-Allocation-Secret": secret }
+    );
+  },
+
 
 };
