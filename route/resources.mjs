@@ -5,7 +5,7 @@ import bookings from "../models/bookings.mjs";
 
 const router = express.Router();
 
-router.get("/broker", async (req, res) => {
+router.get("/broker",requireAuth, async (req, res) => {
   try {
     const allResources = await resources.syncAll();
 
