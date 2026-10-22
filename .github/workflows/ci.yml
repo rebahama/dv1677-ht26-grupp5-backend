@@ -24,6 +24,7 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           BROKER_API_URL: ${{ secrets.BROKER_API_URL }}
           BROKER_GROUP_TOKEN: ${{ secrets.BROKER_GROUP_TOKEN }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
   #
   # Lägg även till `needs: test` i deploy.yml så att deploy
   # bara sker om testerna går igenom.
