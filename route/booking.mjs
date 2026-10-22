@@ -22,11 +22,6 @@ router.post("/", requireAuth, async (req, res) => {
 
     const { resourceId, startsAt, endsAt, want } = req.body;
 
-    if (!ObjectId.isValid(resourceId)) {
-      return res.status(400).json({
-        error: "Invalid resourceId",
-      });
-    }
 
     const resource = await db.collection("resources").findOne({
       _id: new ObjectId(resourceId),
