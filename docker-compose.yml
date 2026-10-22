@@ -13,6 +13,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - BROKER_API_URL=${BROKER_API_URL}
       - BROKER_GROUP_TOKEN=${BROKER_GROUP_TOKEN}
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
     depends_on:
       - mongodb
     restart: always
