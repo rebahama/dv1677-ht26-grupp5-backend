@@ -6,6 +6,7 @@ import { ObjectId } from "mongodb";
 import { validateBooking } from "../domain/policy.mjs";
 import { getAvailableTimes } from "../domain/availability.mjs";
 import { broker, BrokerError } from "../config/broker.mjs";
+import { sendNotification } from "../services/notify.mjs";
 
 const router = express.Router();
 
@@ -94,6 +95,12 @@ router.post("/", requireAuth, async (req, res) => {
       req.user,
       allocation
     );
+    await sendNotification(
+      `New booking created!\n` +
+      `Resource: ${resource.name}\n` +
+      `Start: ${startsAt}\n` +
+      `End: ${endsAt}`
+    );
 
     return res.status(201).json(created);
   } catch (err) {
@@ -160,6 +167,15 @@ router.delete("/:id", requireAuth, async (req, res) => {
       req.params.id,
       req.user
     );
+
+    // Notify Discord only when a booking was actually cancelled
+    if (deleted.changes === 1) {
+      await sendNotification(
+        `Booking cancelled!\n` +
+        `Booking ID: ${req.params.id}\n` +
+        `Cancelled by user: ${req.user.id}`
+      );
+    }
 
     return res.json({
       changes: deleted.changes,

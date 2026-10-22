@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import request from "supertest";
+import app from "./app.mjs";
+import db from "./db/database.mjs";
+import { getAvailableTimes } from "./domain/availability.mjs";
+import { sendNotification } from "./services/notify.mjs";
+
 vi.mock("./config/broker.mjs", async (importOriginal) => {
     const actual = await importOriginal();
 
@@ -16,9 +21,11 @@ vi.mock("./config/broker.mjs", async (importOriginal) => {
         },
     };
 });
-import app from "./app.mjs";
-import db from "./db/database.mjs";
-import { getAvailableTimes } from "./domain/availability.mjs";
+
+vi.mock("./services/notify.mjs", () => ({
+    sendNotification: vi.fn().mockResolvedValue(true),
+}));
+
 
 async function getAuthToken() {
     const email = `test-${Date.now()}-${Math.random()}@example.com`;
@@ -545,6 +552,10 @@ describe("POST /bookings - policy", () => {
             });
 
         expect(response.status).toBe(201);
+        
+        expect(sendNotification).toHaveBeenCalledWith(
+            expect.stringContaining("New booking created!")
+        );
     });
 
     it("should return 400 when startsAt is after endsAt", async () => {
