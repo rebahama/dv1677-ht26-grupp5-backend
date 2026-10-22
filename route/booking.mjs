@@ -228,9 +228,14 @@ router.put("/:id/end-time", requireAuth, async (req, res) => {
   try {
     const { endsAt } = req.body;
 
+    if (!endsAt) {
+      return res.status(400).json({
+        error: "A valid endsAt date is required",
+      });
+    }
     const newEndTime = new Date(endsAt);
 
-    if (!endsAt || Number.isNaN(newEndTime.getTime())) {
+    if (Number.isNaN(newEndTime.getTime())) {
       return res.status(400).json({
         error: "A valid endsAt date is required",
       });
@@ -243,6 +248,12 @@ router.put("/:id/end-time", requireAuth, async (req, res) => {
 
     if (!booking) {
       return res.status(404).json({ error: "Booking not found" });
+    }
+
+    if (newEndTime <= new Date(booking.startsAt)) {
+      return res.status(400).json({
+        error: "End time must be after the booking start time",
+      });
     }
 
     if (!booking.broker?.allocationId || !booking.broker?.secret) {
