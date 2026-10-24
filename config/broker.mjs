@@ -74,6 +74,18 @@ async function post(path, payload, extraHeaders = {}) {
 export const broker = {
   inventory: (type) => call(`/${type}/inventory`),
 
+  proxmoxAvailability: () => call("/proxmox/availability"),
+
+  availability: (type) => {
+    const allowedTypes = ["proxmox", "maas", "openstack"];
+
+    if (!allowedTypes.includes(type)) {
+      throw new Error("Unsupported broker type");
+    }
+
+    return call(`/${type}/availability`);
+  },
+
   allocate: (type, payload) => {
     const allowedTypes = ["proxmox", "maas", "openstack"];
 
@@ -112,13 +124,13 @@ export const broker = {
     const allowedTypes = ["proxmox", "maas", "openstack"];
 
     if (!allowedTypes.includes(type)) {
-        throw new Error("Unsupported broker type");
+      throw new Error("Unsupported broker type");
     }
 
     return post(
-        `/${type}/allocations/${encodeURIComponent(id)}/extend`,
-        { endsAt },
-        { "X-Booker-Allocation-Secret": secret }
+      `/${type}/allocations/${encodeURIComponent(id)}/extend`,
+      { endsAt },
+      { "X-Booker-Allocation-Secret": secret }
     );
   },
 

@@ -2,6 +2,7 @@ import express from "express";
 import resources from "../models/resources.mjs";
 import { requireAuth } from "../middleware/auth.mjs";
 import bookings from "../models/bookings.mjs";
+import { broker, BrokerError } from "../config/broker.mjs";
 
 const router = express.Router();
 
@@ -64,6 +65,36 @@ router.get("/:id", requireAuth, async (req, res) => {
     resource,
     bookings: resourceBookings,
   });
+});
+
+router.get("/:type/availability", requireAuth, async (req, res) => {
+  try {
+    const { type } = req.params;
+    const allowedTypes = ["proxmox", "maas", "openstack"];
+
+    if (!allowedTypes.includes(type)) {
+      return res.status(400).json({
+        error: "Unsupported resource type",
+      });
+    }
+
+    const data = await broker.availability(type);
+
+    return res.json(data);
+  } catch (error) {
+    if (error instanceof BrokerError) {
+      return res.status(502).json({
+        error: "Could not fetch broker availability",
+        code: error.code,
+      });
+    }
+
+    console.error("Availability error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
 });
 
 router.delete("/:id", requireAuth, async (req, res) => {
