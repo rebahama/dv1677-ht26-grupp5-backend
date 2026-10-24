@@ -56,6 +56,7 @@ router.post("/", requireAuth, async (req, res) => {
       payload = {
         systemId: resource.externalId,
         user,
+        startsAt: new Date(startsAt).toISOString(),
         endsAt: new Date(endsAt).toISOString(),
       };
     } else if (
