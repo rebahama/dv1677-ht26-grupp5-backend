@@ -139,7 +139,6 @@ router.delete("/:id", requireAuth, async (req, res) => {
       const resource = await db.collection("resources").findOne({
         _id: booking.resourceId,
       });
-      console.log("Resource found:", resource);
       if (!resource) {
         return res.status(404).json({
           error: "Resource not found",
@@ -213,7 +212,6 @@ router.get("/availability", requireAuth, async (req, res) => {
 
 router.get("/", requireAuth, async (req, res) => {
   const result = await bookings.getByUser(req.user);
-
   const safeBookings = result.map(({ broker, ...booking }) => ({
     ...booking,
     broker: broker
@@ -228,15 +226,9 @@ router.get("/", requireAuth, async (req, res) => {
 router.put("/:id/end-time", requireAuth, async (req, res) => {
   try {
     const { endsAt } = req.body;
-
-    if (!endsAt) {
-      return res.status(400).json({
-        error: "A valid endsAt date is required",
-      });
-    }
     const newEndTime = new Date(endsAt);
 
-    if (Number.isNaN(newEndTime.getTime())) {
+    if (!endsAt || Number.isNaN(newEndTime.getTime())) {
       return res.status(400).json({
         error: "A valid endsAt date is required",
       });
