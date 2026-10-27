@@ -408,8 +408,8 @@ describe("POST /bookings - policy", () => {
                     ramMb: 1024,
                     diskGb: 10,
                 },
-                startsAt: "2026-11-15T10:00:00Z",
-                endsAt: "2026-11-15T12:00:00Z",
+                startsAt: "2026-12-30T10:00:00Z",
+                endsAt: "2026-12-30T12:00:00Z",
             });
 
 
