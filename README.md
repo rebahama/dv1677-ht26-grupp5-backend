@@ -70,7 +70,7 @@ Backenden kommunicerar med en mellanhand för att hämta kapaciteter för inneh�
 
 BROKER_API_URL och BROKER_GROUP_TOKEN. Med hjälp av dessa två värden så kan vi anropa broker och synka våran lokala databas med innehållet ifrån broken.
 
-När resurser synkas till databasen ifrån broker så valdes alternativ: B. Synka till egen samling. En url användes "syncresources": "/resources/broker", detta hämtar information ifrån broker och lägger till resurser till den lokala databasen som appen använder.
+När resurser synkas till databasen ifrån broker så valdes **alternativ: B. Synka till egen samling.** En url användes "syncresources": "/resources/broker", detta hämtar information ifrån broker och lägger till resurser till den lokala databasen som appen använder.
 
 I frontend finns en knapp när användaren loggar in och klickar på som anropar /resources/broker url. Detta gör att databasen synkas och uppdateras, det finns även en syncAt field i resources databas kollektionen som visar när resurserna synkades sist med tid och datum.
 
@@ -92,6 +92,12 @@ Användaren kan fortfarande se sparade resurser ifrån den senaste lyckade synkn
 Användaren kan se en lista med resources som hämtas från broker och uppdaterar lokala databasen som sedan exporteras till fronteden där frontenden displayar relevanta resurser. När en användare ska göra en bokning mot resursen så finns följande: Proxmox och Openstack, Vcpu, Ram och disk capacity används med boknings perioden som användaren frågar efter. Detta skickar frontenden till backenden och backenden skickar sedan detta vidare till broker. Broker svarar tillbaka med en success meddelande eller fail beronde på om detta finns tillgänglig hos broker. 
 
 Även MAAS kan bokas, detta skickar endast maskinens system id till brokern, när en bokning har beviljats av broker så sparas detta i den lokala Mongo db databasen som användaren sedan kan se i en egen sida.
+
+### Var sätts BROKER_API_URL och BROKER_GROUP_TOKEN?
+
+Dessa två miljövariabler har satts i Github secrets, dessa används av backend för att kontakta broker och även autentisera gruppen. Dessa variabler är inte synliga i frontend koden utan kan endast få tillgång i backenden genom autentisering via GITHUB secrets.
+
+Detta kan ses i config/broker.mjs filen där den riktiga värden inte skrivs ut och displayas och även i docker-compose.yml filen så exponeras inte hemliga värden.
 
 
 ### Felhanteringar
